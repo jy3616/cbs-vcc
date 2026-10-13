@@ -49,7 +49,7 @@ function AuthPage() {
         return;
       }
       const p = schema.safeParse({ email, password, name: name || undefined });
-      if (!p.success) throw new Error(p.error.issues[0].message);
+      if (!p.success) throw new Error(p.error.issues[0]?.message ?? "Invalid input");
       if (mode === "signup") {
         if (!p.data.name) throw new Error("Enter your name");
         const { error } = await supabase.auth.signUp({
