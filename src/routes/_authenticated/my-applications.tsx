@@ -23,7 +23,7 @@ function MyApplications() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <Link to="/" className="text-sm text-muted-foreground hover:underline">← Back to job board</Link>
+      <Link to="/board" className="text-sm text-muted-foreground hover:underline">← Back to job board</Link>
       <h1 className="mt-3 text-4xl font-bold text-primary">My applications</h1>
       <div className="mt-6 space-y-3">
         {isLoading || !user ? <p className="text-sm text-muted-foreground">Loading…</p> :
