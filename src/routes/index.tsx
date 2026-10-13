@@ -163,7 +163,7 @@ function Index() {
       <section className="mt-8">
         <h2 className="text-2xl font-semibold">New in the last 24 hours</h2>
         <div className="mt-4 space-y-3">
-          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} />) :
+          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} track={track(j)} />) :
             <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No new postings in the last 24 hours.</p>}
         </div>
       </section>
@@ -188,7 +188,7 @@ function Index() {
         </div>
         <p className="mt-3 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
         <div className="mt-4 space-y-3">
-          {list.length ? list.map((j) => <JobCard key={j.url} j={j} />) :
+          {list.length ? list.map((j) => <JobCard key={j.url} j={j} track={track(j)} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
         </div>
       </section>
