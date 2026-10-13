@@ -14,9 +14,9 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Sign in · CBS Venture Capital Job Board" },
+      { title: "Sign in · CBS Venture Capital Club Job Board" },
       { name: "description", content: "Sign in to browse open VC, growth equity and CVC roles for Columbia Business School MBA students." },
-      { property: "og:title", content: "CBS Venture Capital Job Board" },
+      { property: "og:title", content: "CBS Venture Capital Club Job Board" },
       { property: "og:description", content: "Sign in to browse open VC roles for Columbia MBA students." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -87,7 +87,7 @@ function SignInPage() {
         <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-14 w-auto rounded-md ring-1 ring-border" />
       </div>
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
-      <h1 className="mt-2 text-3xl font-bold text-primary">CBS Venture Capital Job Board</h1>
+      <h1 className="mt-2 text-3xl font-bold text-primary">CBS Venture Capital Club Job Board</h1>
       <p className="mt-2 text-sm text-muted-foreground">Sign in to browse the board and track your applications.</p>
       <h2 className="mt-6 text-xl font-semibold">{title}</h2>
       <form onSubmit={submit} className="mt-4 space-y-3">

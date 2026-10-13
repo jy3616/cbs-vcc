@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CBS Venture Capital Job Board" },
+      { title: "CBS Venture Capital Club Job Board" },
       { name: "description", content: "Open venture capital roles for Columbia MBA students." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
