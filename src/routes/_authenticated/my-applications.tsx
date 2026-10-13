@@ -5,7 +5,7 @@ import { useApplications, useSessionUser, useToggleApplied } from "@/lib/applica
 export const Route = createFileRoute("/_authenticated/my-applications")({
   head: () => ({
     meta: [
-      { title: "My applications · CBS VC Job Board" },
+      { title: "My applications · CBS Venture Capital Club Job Board" },
       { name: "description", content: "The venture capital postings you've applied to." },
       { property: "og:title", content: "My applications · CBS VC Job Board" },
       { property: "og:description", content: "Track the VC roles you've applied to." },
