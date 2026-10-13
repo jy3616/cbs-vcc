@@ -1,8 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { JOBS, LAST_UPDATED, isNew, type Job } from "@/data/jobs";
 import cbsLogo from "@/assets/cbs-logo.svg";
 import vccLogo from "@/assets/vcc-club-logo.png.asset.json";
+import { supabase } from "@/integrations/supabase/client";
+import { profileQuery, useApplications, useSessionUser, useToggleApplied } from "@/lib/applications";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,7 +32,9 @@ const updated = new Date(LAST_UPDATED).toLocaleString("en-US", {
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
-function JobCard({ j }: { j: Job }) {
+type Track = { signedIn: boolean; applied: boolean; onToggle: () => void };
+
+function JobCard({ j, track }: { j: Job; track: Track }) {
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""}`}>
@@ -37,10 +43,22 @@ function JobCard({ j }: { j: Job }) {
           <p className="text-sm font-semibold text-muted-foreground">{j.firm}</p>
           <h3 className="text-lg font-semibold leading-snug">{j.title}</h3>
         </div>
-        <a href={j.url} target="_blank" rel="noopener noreferrer"
-          className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
-          Apply ↗
-        </a>
+        <div className="flex shrink-0 gap-2">
+          {track.signedIn ? (
+            <button onClick={track.onToggle}
+              className={`rounded-md border px-3 py-1.5 text-sm font-medium ${track.applied ? "border-accent bg-highlight text-highlight-foreground" : "border-input hover:bg-secondary"}`}>
+              {track.applied ? "Applied ✓" : "Mark as applied"}
+            </button>
+          ) : (
+            <Link to="/auth" className="rounded-md border border-input px-3 py-1.5 text-sm text-muted-foreground hover:bg-secondary">
+              Sign in to track
+            </Link>
+          )}
+          <a href={j.url} target="_blank" rel="noopener noreferrer"
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
+            Apply ↗
+          </a>
+        </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
         {j.nyc && <span className="rounded bg-highlight px-2 py-0.5 font-semibold text-highlight-foreground">NYC</span>}
