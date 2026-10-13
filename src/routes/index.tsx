@@ -1,8 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { JOBS, LAST_UPDATED, isNew, type Job } from "@/data/jobs";
 import cbsLogo from "@/assets/cbs-logo.svg";
 import vccLogo from "@/assets/vcc-club-logo.png.asset.json";
+import { supabase } from "@/integrations/supabase/client";
+import { profileQuery, useApplications, useSessionUser, useToggleApplied } from "@/lib/applications";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,7 +32,9 @@ const updated = new Date(LAST_UPDATED).toLocaleString("en-US", {
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
-function JobCard({ j }: { j: Job }) {
+type Track = { signedIn: boolean; applied: boolean; onToggle: () => void };
+
+function JobCard({ j, track }: { j: Job; track: Track }) {
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""}`}>
@@ -37,10 +43,22 @@ function JobCard({ j }: { j: Job }) {
           <p className="text-sm font-semibold text-muted-foreground">{j.firm}</p>
           <h3 className="text-lg font-semibold leading-snug">{j.title}</h3>
         </div>
-        <a href={j.url} target="_blank" rel="noopener noreferrer"
-          className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
-          Apply ↗
-        </a>
+        <div className="flex shrink-0 gap-2">
+          {track.signedIn ? (
+            <button onClick={track.onToggle}
+              className={`rounded-md border px-3 py-1.5 text-sm font-medium ${track.applied ? "border-accent bg-highlight text-highlight-foreground" : "border-input hover:bg-secondary"}`}>
+              {track.applied ? "Applied ✓" : "Mark as applied"}
+            </button>
+          ) : (
+            <Link to="/auth" className="rounded-md border border-input px-3 py-1.5 text-sm text-muted-foreground hover:bg-secondary">
+              Sign in to track
+            </Link>
+          )}
+          <a href={j.url} target="_blank" rel="noopener noreferrer"
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
+            Apply ↗
+          </a>
+        </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
         {j.nyc && <span className="rounded bg-highlight px-2 py-0.5 font-semibold text-highlight-foreground">NYC</span>}
@@ -91,6 +109,31 @@ function Index() {
     ).sort((a, b) => (sort === "new" ? b.datePosted.localeCompare(a.datePosted) : a.datePosted.localeCompare(b.datePosted)));
   }, [q, role, loc, firm, sector, sort]);
 
+  const { user } = useSessionUser();
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const { data: profile } = useQuery({ ...profileQuery(user?.id ?? ""), enabled: !!user });
+  const { data: apps } = useApplications(user?.id);
+  const toggle = useToggleApplied(user?.id);
+  const appliedSet = new Set((apps ?? []).map((a) => a.job_url));
+  const track = (j: Job): Track => {
+    const applied = appliedSet.has(j.url);
+    return {
+      signedIn: !!user, applied,
+      onToggle: () => toggle.mutate({ job: j, applied }, {
+        onSuccess: () => toast.success(applied ? "Removed from your applications" : "Marked as applied"),
+        onError: (e) => toast.error(e.message),
+      }),
+    };
+  };
+
+  async function signOut() {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
       <header className="border-b pb-6">
@@ -98,6 +141,19 @@ function Index() {
           <img src={cbsLogo} alt="Columbia Business School logo" className="h-16 w-16" />
           <span className="hidden h-14 w-px bg-border sm:block" aria-hidden="true" />
           <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-16 w-auto rounded-md ring-1 ring-border" />
+          <nav className="ml-auto flex items-center gap-3 text-sm">
+            {user ? (
+              <>
+                <span className="text-muted-foreground">Hi, {profile?.display_name ?? user.email}</span>
+                <Link to="/my-applications" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">
+                  My applications{apps?.length ? ` (${apps.length})` : ""}
+                </Link>
+                <button onClick={signOut} className="text-muted-foreground hover:underline">Sign out</button>
+              </>
+            ) : (
+              <Link to="/auth" className="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground hover:opacity-90">Sign in</Link>
+            )}
+          </nav>
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
         <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl">CBS Venture Capital Job Board</h1>
@@ -107,7 +163,7 @@ function Index() {
       <section className="mt-8">
         <h2 className="text-2xl font-semibold">New in the last 24 hours</h2>
         <div className="mt-4 space-y-3">
-          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} />) :
+          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} track={track(j)} />) :
             <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No new postings in the last 24 hours.</p>}
         </div>
       </section>
@@ -132,7 +188,7 @@ function Index() {
         </div>
         <p className="mt-3 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
         <div className="mt-4 space-y-3">
-          {list.length ? list.map((j) => <JobCard key={j.url} j={j} />) :
+          {list.length ? list.map((j) => <JobCard key={j.url} j={j} track={track(j)} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
         </div>
       </section>
