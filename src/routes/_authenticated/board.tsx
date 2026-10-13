@@ -11,9 +11,9 @@ import { profileQuery, useApplications, useSessionUser, useToggleApplied } from 
 export const Route = createFileRoute("/_authenticated/board")({
   head: () => ({
     meta: [
-      { title: "CBS Venture Capital Job Board" },
+      { title: "CBS Venture Capital Club Job Board" },
       { name: "description", content: "Daily-updated open VC, growth equity and CVC roles for Columbia Business School MBA students." },
-      { property: "og:title", content: "CBS Venture Capital Job Board" },
+      { property: "og:title", content: "CBS Venture Capital Club Job Board" },
       { property: "og:description", content: "Daily-updated open VC roles for Columbia MBA students." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -139,7 +139,7 @@ function Board() {
           </nav>
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
-        <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl">CBS Venture Capital Job Board</h1>
+        <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl">CBS Venture Capital Club Job Board</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last updated: {updated} ET · {JOBS.length} open postings</p>
       </header>
 
