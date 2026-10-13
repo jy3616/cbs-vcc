@@ -96,8 +96,8 @@ function Index() {
       <header className="border-b pb-6">
         <div className="mb-4 flex flex-wrap items-center gap-4">
           <img src={cbsLogo} alt="Columbia Business School logo" className="h-16 w-16" />
-          <span className="hidden h-12 w-px bg-border sm:block" aria-hidden="true" />
-          <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-12 w-auto rounded-md ring-1 ring-border" />
+          <span className="hidden h-14 w-px bg-border sm:block" aria-hidden="true" />
+          <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-16 w-auto rounded-md ring-1 ring-border" />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
         <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl">CBS Venture Capital Job Board</h1>
