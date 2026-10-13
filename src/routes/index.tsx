@@ -94,8 +94,12 @@ function Index() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
       <header className="border-b pb-6">
-        <img src={cbsLogo} alt="Columbia Business School logo" className="mb-4 h-16 w-16" />
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School</p>
+        <div className="mb-4 flex flex-wrap items-center gap-4">
+          <img src={cbsLogo} alt="Columbia Business School logo" className="h-16 w-16" />
+          <span className="hidden h-12 w-px bg-border sm:block" aria-hidden="true" />
+          <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-12 w-auto rounded-md ring-1 ring-border" />
+        </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
         <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl">CBS Venture Capital Job Board</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last updated: {updated} ET · {JOBS.length} open postings</p>
       </header>
