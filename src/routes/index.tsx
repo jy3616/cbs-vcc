@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { JOBS, LAST_UPDATED, isNew, type Job } from "@/data/jobs";
 import cbsLogo from "@/assets/cbs-logo.svg";
+import vccLogo from "@/assets/vcc-club-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
