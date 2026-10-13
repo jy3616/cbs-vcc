@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { JOBS, LAST_UPDATED, isNew, type Job } from "@/data/jobs";
+import cbsLogo from "@/assets/cbs-logo.svg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -92,6 +93,7 @@ function Index() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
       <header className="border-b pb-6">
+        <img src={cbsLogo} alt="Columbia Business School logo" className="mb-4 h-16 w-16" />
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School</p>
         <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl">CBS Venture Capital Job Board</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last updated: {updated} ET · {JOBS.length} open postings</p>
