@@ -139,7 +139,7 @@ function Board() {
           </nav>
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
-        <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl">CBS Venture Capital Club Job Board</h1>
+        <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last updated: {updated} ET · {JOBS.length} open postings</p>
       </header>
 
