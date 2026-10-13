@@ -109,6 +109,31 @@ function Index() {
     ).sort((a, b) => (sort === "new" ? b.datePosted.localeCompare(a.datePosted) : a.datePosted.localeCompare(b.datePosted)));
   }, [q, role, loc, firm, sector, sort]);
 
+  const { user } = useSessionUser();
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const { data: profile } = useQuery({ ...profileQuery(user?.id ?? ""), enabled: !!user });
+  const { data: apps } = useApplications(user?.id);
+  const toggle = useToggleApplied(user?.id);
+  const appliedSet = new Set((apps ?? []).map((a) => a.job_url));
+  const track = (j: Job): Track => {
+    const applied = appliedSet.has(j.url);
+    return {
+      signedIn: !!user, applied,
+      onToggle: () => toggle.mutate({ job: j, applied }, {
+        onSuccess: () => toast.success(applied ? "Removed from your applications" : "Marked as applied"),
+        onError: (e) => toast.error(e.message),
+      }),
+    };
+  };
+
+  async function signOut() {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
       <header className="border-b pb-6">
@@ -116,6 +141,19 @@ function Index() {
           <img src={cbsLogo} alt="Columbia Business School logo" className="h-16 w-16" />
           <span className="hidden h-14 w-px bg-border sm:block" aria-hidden="true" />
           <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-16 w-auto rounded-md ring-1 ring-border" />
+          <nav className="ml-auto flex items-center gap-3 text-sm">
+            {user ? (
+              <>
+                <span className="text-muted-foreground">Hi, {profile?.display_name ?? user.email}</span>
+                <Link to="/my-applications" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">
+                  My applications{apps?.length ? ` (${apps.length})` : ""}
+                </Link>
+                <button onClick={signOut} className="text-muted-foreground hover:underline">Sign out</button>
+              </>
+            ) : (
+              <Link to="/auth" className="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground hover:opacity-90">Sign in</Link>
+            )}
+          </nav>
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
         <h1 className="mt-2 text-4xl font-bold text-primary sm:text-5xl">CBS Venture Capital Job Board</h1>

@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Job postings live in src/data/jobs.ts; per-user applications are stored in Cloud keyed by job URL (with firm/title copies) so removed postings still show.
