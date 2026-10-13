@@ -107,7 +107,6 @@ function SignInPage() {
       <p className="mt-8 text-xs text-muted-foreground">
         Postings are gathered from public sources and may change. Always confirm details on the firm's site. Also check CBS Career Management Center resources.
       </p>
-      <Link to="/reset-password" className="hidden" aria-hidden="true">Reset password</Link>
     </div>
   );
 }
