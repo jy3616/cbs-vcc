@@ -80,14 +80,14 @@ function SignInPage() {
   const title = mode === "signup" ? "Create an account" : mode === "forgot" ? "Reset password" : "Sign in";
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-12">
+    <div className="mx-auto max-w-md px-4 py-12">
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <img src={cbsLogo} alt="Columbia Business School logo" className="h-14 w-14" />
         <span className="hidden h-12 w-px bg-border sm:block" aria-hidden="true" />
         <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-14 w-auto rounded-md ring-1 ring-border" />
       </div>
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
-      <h1 className="mt-2 text-3xl font-bold text-primary">CBS Venture Capital Club Job Board</h1>
+      <h1 className="mt-2 text-2xl font-bold text-primary sm:text-3xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
       <p className="mt-2 text-sm text-muted-foreground">Sign in to browse the board and track your applications.</p>
       <h2 className="mt-6 text-xl font-semibold">{title}</h2>
       <form onSubmit={submit} className="mt-4 space-y-3">
