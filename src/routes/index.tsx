@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import cbsLogo from "@/assets/cbs-logo.svg";
 import vccLogo from "@/assets/vcc-club-logo.png.asset.json";
-import { FallingLogos } from "@/components/FallingLogos";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -42,7 +41,6 @@ function SignInPage() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
-  const [celebrate, setCelebrate] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,8 +68,8 @@ function SignInPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: p.data.email, password: p.data.password });
         if (error) throw error;
-        setCelebrate(true);
-        setTimeout(() => nav({ to: "/board" }), 4500);
+        sessionStorage.removeItem("cbs-logo-shower-shown");
+        nav({ to: "/board" });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -84,7 +82,6 @@ function SignInPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12">
-      {celebrate && <FallingLogos />}
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <img src={cbsLogo} alt="Columbia Business School logo" className="h-14 w-14" />
         <span className="hidden h-12 w-px bg-border sm:block" aria-hidden="true" />
