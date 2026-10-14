@@ -31,11 +31,11 @@ function MyResume() {
 
   async function save() {
     if (!user) return;
-    if (!text.trim()) return toast.error("Paste your resume first.");
+    if (!text.trim()) { toast.error("Paste your resume first."); return; }
     setBusy(true);
     const { error } = await supabase.from("resumes").upsert({ user_id: user.id, content: text, updated_at: new Date().toISOString() });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Resume saved");
     qc.invalidateQueries({ queryKey: ["resume", user.id] });
   }
@@ -43,7 +43,7 @@ function MyResume() {
   async function remove() {
     if (!user || !confirm("Delete your saved resume?")) return;
     const { error } = await supabase.from("resumes").delete().eq("user_id", user.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setText("");
     toast.success("Resume deleted");
     qc.invalidateQueries({ queryKey: ["resume", user.id] });

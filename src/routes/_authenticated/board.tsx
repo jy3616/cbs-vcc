@@ -34,7 +34,7 @@ const updated = new Date(LAST_UPDATED).toLocaleString("en-US", {
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
-function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; onToggle: () => void; score?: number }) {
+function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; onToggle: () => void; score?: number | undefined }) {
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""}`}>
