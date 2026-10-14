@@ -4,8 +4,7 @@ import { FallingLogos } from "@/components/FallingLogos";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { JOBS, LAST_UPDATED, isNew, type Job } from "@/data/jobs";
-import cbsLogo from "@/assets/cbs-logo.svg";
-import vccLogo from "@/assets/vcc-club-logo.png.asset.json";
+import { BrandLockup } from "@/components/BrandLockup";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery, useApplications, useSessionUser, useToggleApplied } from "@/lib/applications";
 
@@ -138,9 +137,7 @@ function Board() {
       {showLogos && <FallingLogos />}
       <header className="border-b pb-6">
         <div className="mb-4 flex flex-wrap items-center gap-4">
-          <img src={cbsLogo} alt="Columbia Business School logo" className="h-16 w-16" />
-          <span className="hidden h-14 w-px bg-border sm:block" aria-hidden="true" />
-          <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-16 w-auto rounded-md ring-1 ring-border" />
+          <BrandLockup />
           <nav className="ml-auto flex items-center gap-3 text-sm">
             <span className="text-muted-foreground">Hi, {profile?.display_name ?? user?.email}</span>
             <Link to="/my-applications" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">
