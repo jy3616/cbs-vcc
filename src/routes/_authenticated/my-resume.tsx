@@ -50,7 +50,8 @@ function MyResume() {
     const { error } = await supabase.from("resumes").upsert({ user_id: user.id, content, updated_at: new Date().toISOString() });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Resume saved");
+    setText(content);
+    toast.success(`Resume uploaded: ${file.name}`);
     qc.invalidateQueries({ queryKey: ["resume", user.id] });
   }
 
