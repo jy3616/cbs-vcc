@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
 import { Route as AuthenticatedMyApplicationsRouteImport } from './routes/_authenticated/my-applications'
 import { Route as AuthenticatedMyResumeRouteImport } from './routes/_authenticated/my-resume'
@@ -31,6 +32,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBoardRoute = AuthenticatedBoardRouteImport.update({
   id: '/board',
@@ -63,6 +69,7 @@ const ApiPublicHooksCheckLinksRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/board': typeof AuthenticatedBoardRoute
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/board': typeof AuthenticatedBoardRoute
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/board': typeof AuthenticatedBoardRoute
   '/_authenticated/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/_authenticated/my-resume': typeof AuthenticatedMyResumeRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/reset-password'
+    | '/admin'
     | '/board'
     | '/my-applications'
     | '/my-resume'
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/reset-password'
+    | '/admin'
     | '/board'
     | '/my-applications'
     | '/my-resume'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/reset-password'
+    | '/_authenticated/admin'
     | '/_authenticated/board'
     | '/_authenticated/my-applications'
     | '/_authenticated/my-resume'
@@ -149,6 +161,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/board': {
       id: '/_authenticated/board'
@@ -189,6 +208,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedBoardRoute: typeof AuthenticatedBoardRoute
   AuthenticatedMyApplicationsRoute: typeof AuthenticatedMyApplicationsRoute
   AuthenticatedMyResumeRoute: typeof AuthenticatedMyResumeRoute
@@ -196,6 +216,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedBoardRoute: AuthenticatedBoardRoute,
   AuthenticatedMyApplicationsRoute: AuthenticatedMyApplicationsRoute,
   AuthenticatedMyResumeRoute: AuthenticatedMyResumeRoute,
