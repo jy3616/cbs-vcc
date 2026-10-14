@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { JOBS } from "@/data/jobs";
-import { fitSchema, normalizeFit } from "./fit";
+import { fitLabelFor, matrixSchema, narrativeSchema, scoreRequirements, verifyRequirements, type FitResult } from "./fit";
 
 function htmlToText(html: string) {
   return html
@@ -82,7 +82,7 @@ export const analyzeFit = createServerFn({ method: "POST" })
     });
     let requirements;
     try {
-      requirements = verifyRequirements((await pass1.output).requirements.slice(0, 14), resumeText);
+      requirements = verifyRequirements(((await pass1.output) as import("zod").infer<typeof matrixSchema>).requirements.slice(0, 14), resumeText);
     } catch (e) { fail(e); }
     const fitScore = scoreRequirements(requirements!);
 
@@ -104,7 +104,7 @@ export const analyzeFit = createServerFn({ method: "POST" })
     });
     let parsed: FitResult;
     try {
-      const n = await pass2.output;
+      const n = (await pass2.output) as import("zod").infer<typeof narrativeSchema>;
       parsed = {
         fitScore, fitLabel: fitLabelFor(fitScore), requirements: requirements!,
         strengths: n.strengths.slice(0, 5), gaps: n.gaps.slice(0, 5), resumeTips: n.resumeTips.slice(0, 3),
@@ -113,9 +113,9 @@ export const analyzeFit = createServerFn({ method: "POST" })
     } catch (e) { fail(e); }
 
     const { error } = await context.supabase.from("job_analyses").upsert(
-      { user_id: context.userId, job_url: job.url, fit_score: parsed.fitScore, result: parsed, created_at: new Date().toISOString() },
+      { user_id: context.userId, job_url: job.url, fit_score: parsed!.fitScore, result: parsed as never, created_at: new Date().toISOString() },
       { onConflict: "user_id,job_url" },
     );
     if (error) throw new Error(error.message);
-    return parsed;
+    return parsed!;
   });
