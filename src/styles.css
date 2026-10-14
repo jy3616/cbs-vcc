@@ -72,9 +72,3 @@
   }
   h1, h2 { font-family: var(--font-display); }
 }
-
-@keyframes logo-fall {
-  0% { transform: translateY(-12vh) rotate(0deg); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translateY(112vh) rotate(340deg); opacity: 1; }
-}
