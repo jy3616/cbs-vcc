@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { extractResumeText } from "@/lib/resume-file";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -29,14 +30,28 @@ function MyResume() {
   const [busy, setBusy] = useState(false);
   useEffect(() => { if (data) setText(data.content); }, [data]);
 
-  async function save() {
+  async function upload(file: File) {
     if (!user) return;
-    if (!text.trim()) { toast.error("Paste your resume first."); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error("That file is over 10 MB."); return; }
     setBusy(true);
-    const { error } = await supabase.from("resumes").upsert({ user_id: user.id, content: text, updated_at: new Date().toISOString() });
+    let content = "";
+    try {
+      content = await extractResumeText(file);
+    } catch (e) {
+      setBusy(false);
+      toast.error(e instanceof Error ? e.message : "Couldn't read that file.");
+      return;
+    }
+    if (content.length < 50) {
+      setBusy(false);
+      toast.error("We couldn't find text in that file. If it's a scanned image, export it from Word or Google Docs as a PDF and try again.");
+      return;
+    }
+    const { error } = await supabase.from("resumes").upsert({ user_id: user.id, content, updated_at: new Date().toISOString() });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Resume saved");
+    setText(content);
+    toast.success(`Resume uploaded: ${file.name}`);
     qc.invalidateQueries({ queryKey: ["resume", user.id] });
   }
 
@@ -57,16 +72,21 @@ function MyResume() {
       </div>
       <h1 className="mt-4 text-3xl font-bold text-primary">My resume</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Paste your resume as plain text. Only you can see it. It's used for "Check My Fit" on each posting.
+        Upload your resume as a PDF or Word (.docx) file. Only you can see it. It's used for "Check My Fit" on each posting.
       </p>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} disabled={isLoading}
-        placeholder="Paste your resume here…" rows={22}
-        className="mt-5 w-full rounded-lg border border-input bg-card p-4 font-mono text-sm" />
+      <label className={`mt-5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-input bg-card p-8 text-center hover:bg-secondary ${busy || isLoading ? "pointer-events-none opacity-50" : ""}`}>
+        <span className="font-medium">{busy ? "Reading your resume…" : data ? "Upload a new resume" : "Choose your resume file"}</span>
+        <span className="text-xs text-muted-foreground">PDF or Word (.docx), up to 10 MB</span>
+        <input type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) upload(f); }} />
+      </label>
+      {data && (
+        <details className="mt-4 rounded-lg border bg-card p-4 text-sm">
+          <summary className="cursor-pointer font-medium">See the text we read from your resume</summary>
+          <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap font-mono text-xs text-muted-foreground">{text}</pre>
+        </details>
+      )}
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <button onClick={save} disabled={busy}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
-          {busy ? "Saving…" : "Save"}
-        </button>
         {data && (
           <button onClick={remove} className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-secondary">
             Delete resume
