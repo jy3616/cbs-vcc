@@ -102,7 +102,7 @@ export const analyzeFit = createServerFn({ method: "POST" })
       maxRetries: 0,
       providerOptions: opts,
     });
-    let parsed: FitResult;
+    let parsed: FitResult | undefined;
     try {
       const n = (await pass2.output) as import("zod").infer<typeof narrativeSchema>;
       parsed = {
@@ -113,7 +113,7 @@ export const analyzeFit = createServerFn({ method: "POST" })
     } catch (e) { fail(e); }
 
     const { error } = await context.supabase.from("job_analyses").upsert(
-      { user_id: context.userId, job_url: job.url, fit_score: parsed!.fitScore, result: parsed as never, created_at: new Date().toISOString() },
+      { user_id: context.userId, job_url: job.url, fit_score: parsed!.fitScore, result: parsed! as never, created_at: new Date().toISOString() },
       { onConflict: "user_id,job_url" },
     );
     if (error) throw new Error(error.message);
