@@ -71,7 +71,7 @@ function SignInPage() {
         const { error } = await supabase.auth.signInWithPassword({ email: p.data.email, password: p.data.password });
         if (error) throw error;
         setCelebrate(true);
-        setTimeout(() => nav({ to: "/board" }), 2400);
+        setTimeout(() => nav({ to: "/board" }), 4500);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
