@@ -16,6 +16,7 @@ import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedMyApplicationsRouteImport } from './routes/_authenticated/my-applications'
 import { Route as AuthenticatedMyResumeRouteImport } from './routes/_authenticated/my-resume'
 import { Route as AuthenticatedJobsSlugRouteImport } from './routes/_authenticated/jobs.$slug'
+import { Route as ApiPublicHooksCheckLinksRouteImport } from './routes/api/public/hooks/check-links'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,12 @@ const AuthenticatedJobsSlugRoute = AuthenticatedJobsSlugRouteImport.update({
   path: '/jobs/$slug',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksCheckLinksRoute =
+  ApiPublicHooksCheckLinksRouteImport.update({
+    id: '/api/public/hooks/check-links',
+    path: '/api/public/hooks/check-links',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
   '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
+  '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,6 +76,7 @@ export interface FileRoutesByTo {
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
   '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
+  '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,6 +87,7 @@ export interface FileRoutesById {
   '/_authenticated/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/_authenticated/my-resume': typeof AuthenticatedMyResumeRoute
   '/_authenticated/jobs/$slug': typeof AuthenticatedJobsSlugRoute
+  '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/my-applications'
     | '/my-resume'
     | '/jobs/$slug'
+    | '/api/public/hooks/check-links'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/my-applications'
     | '/my-resume'
     | '/jobs/$slug'
+    | '/api/public/hooks/check-links'
   id:
     | '__root__'
     | '/'
@@ -105,12 +117,14 @@ export interface FileRouteTypes {
     | '/_authenticated/my-applications'
     | '/_authenticated/my-resume'
     | '/_authenticated/jobs/$slug'
+    | '/api/public/hooks/check-links'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicHooksCheckLinksRoute: typeof ApiPublicHooksCheckLinksRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -164,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/check-links': {
+      id: '/api/public/hooks/check-links'
+      path: '/api/public/hooks/check-links'
+      fullPath: '/api/public/hooks/check-links'
+      preLoaderRoute: typeof ApiPublicHooksCheckLinksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -188,6 +209,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicHooksCheckLinksRoute: ApiPublicHooksCheckLinksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
