@@ -37,7 +37,7 @@ export const analyzeFit = createServerFn({ method: "POST" })
     const description = await fetchDescription(job.url);
     const posting = [
       `Firm: ${job.firm}`, `Title: ${job.title}`, `Location: ${job.location || "not stated"}`,
-      `Firm type: ${job.firmType}`, `Focus: ${job.focus || "not stated"}`, `Role type: ${job.role_type}`,
+      `Firm type: ${job.firm_type}`, `Focus: ${job.focus || "not stated"}`, `Role type: ${job.role_type}`,
       description ? `Full posting page text:\n${description}` : "Full description could not be retrieved; rely only on the fields above and do not invent requirements.",
     ].join("\n");
 
