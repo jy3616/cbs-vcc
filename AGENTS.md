@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Job postings live in src/data/jobs.ts; per-user applications are stored in Cloud keyed by job URL (with firm/title copies) so removed postings still show.
+- Resume Match: resumes and AI fit analyses live in Cloud per user (RLS own-only); the AI call runs in a server function that fetches the posting page text so it never relies on invented job details.

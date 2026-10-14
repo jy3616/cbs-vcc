@@ -11,5 +11,7 @@
 - Falling CBS logo shower after sign-in, shown on the board's first open per browser session (transparent logo, no background)
 - Header logo lockup is now a link back to the job board; it also appears on "My applications"
 
+- Resume Match: My resume page, job detail pages with Check My Fit + Interview Prep, saved results, Regenerate, fit badges on cards
+
 ## Open
 - Next daily update run: add new postings, drop closed ones
