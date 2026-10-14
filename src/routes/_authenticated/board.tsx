@@ -45,18 +45,19 @@ function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; on
             <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }} className="hover:text-primary hover:underline">{j.title}</Link>
             {score !== undefined && (
               <span className="ml-2 inline-block rounded-full bg-primary px-2 py-0.5 align-middle text-xs font-semibold text-primary-foreground"
-                title={`${fitLabelFor(score)} — your Resume Match score`}>Fit {score}</span>
+                title={`${fitLabelFor(score)} — your Resume Match score`}>Your fit: {score}</span>
             )}
           </h3>
-          <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }} className="text-xs font-medium text-primary hover:underline">
-            Details & Check My Fit →
-          </Link>
         </div>
         <div className="flex shrink-0 gap-2">
           <button onClick={onToggle}
             className={`rounded-md border px-3 py-1.5 text-sm font-medium ${applied ? "border-accent bg-highlight text-highlight-foreground" : "border-input hover:bg-secondary"}`}>
             {applied ? "Applied ✓" : "Mark as applied"}
           </button>
+          <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }}
+            className="rounded-md border border-primary px-3 py-1.5 text-sm font-medium text-primary hover:bg-secondary">
+            Check My Fit
+          </Link>
           <a href={j.url} target="_blank" rel="noopener noreferrer"
             className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
             Apply ↗
