@@ -19,7 +19,7 @@ export function FallingLogos() {
       {drops.map((d, i) => (
         <img
           key={i}
-          src={cbsMark.url}
+          src={cbsMark}
           alt=""
           className="absolute top-0"
           style={{
