@@ -15,6 +15,13 @@
       "when": 1792010206252,
       "tag": "0001_resume_match",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792012795133,
+      "tag": "0002_postings_and_admin",
+      "breakpoints": true
     }
   ]
 }
