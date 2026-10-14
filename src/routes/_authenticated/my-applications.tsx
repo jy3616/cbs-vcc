@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { BrandLockup } from "@/components/BrandLockup";
 import { useApplications, useSessionUser, useToggleApplied } from "@/lib/applications";
 
 export const Route = createFileRoute("/_authenticated/my-applications")({
@@ -23,7 +24,10 @@ function MyApplications() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <Link to="/board" className="text-sm text-muted-foreground hover:underline">← Back to job board</Link>
+      <BrandLockup />
+      <div className="mt-6">
+        <Link to="/board" className="text-sm text-muted-foreground hover:underline">← Back to job board</Link>
+      </div>
       <h1 className="mt-3 text-4xl font-bold text-primary">My applications</h1>
       <div className="mt-6 space-y-3">
         {isLoading || !user ? <p className="text-sm text-muted-foreground">Loading…</p> :

@@ -3,8 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import cbsLogo from "@/assets/cbs-logo.svg";
-import vccLogo from "@/assets/vcc-club-logo.png.asset.json";
+import { BrandLockup } from "@/components/BrandLockup";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -82,10 +81,8 @@ function SignInPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12">
-      <div className="mb-6 flex flex-wrap items-center gap-4">
-        <img src={cbsLogo} alt="Columbia Business School logo" className="h-14 w-14" />
-        <span className="hidden h-12 w-px bg-border sm:block" aria-hidden="true" />
-        <img src={vccLogo.url} alt="Columbia Venture Capital Club logo" className="h-14 w-auto rounded-md ring-1 ring-border" />
+      <div className="mb-6">
+        <BrandLockup size="md" asLink={false} />
       </div>
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
       <h1 className="mt-2 text-2xl font-bold text-primary sm:text-3xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
