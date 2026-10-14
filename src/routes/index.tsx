@@ -84,7 +84,7 @@ function SignInPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12">
-      {celebrate && <FallingLogos />}
+      {true && <FallingLogos />}
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <img src={cbsLogo} alt="Columbia Business School logo" className="h-14 w-14" />
         <span className="hidden h-12 w-px bg-border sm:block" aria-hidden="true" />
