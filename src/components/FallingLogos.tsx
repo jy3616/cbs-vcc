@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import cbsMark from "@/assets/cbs-mark-small.png.asset.json";
+import cbsMark from "@/assets/cbs-logo.svg";
 
 const COUNT = 40;
 
