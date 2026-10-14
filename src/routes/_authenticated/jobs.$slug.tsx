@@ -127,6 +127,24 @@ function Results({ r, at }: { r: FitResult; at: string }) {
           <p className="text-xs text-muted-foreground">Analyzed {new Date(at).toLocaleString()}</p>
         </div>
       </div>
+      {r.requirements && (
+        <Block title="Requirement-by-requirement check">
+          <p className="mb-3 text-xs text-muted-foreground">Every requirement in the posting, checked against exact lines in your resume. Must-haves count 3× nice-to-haves; partial counts half. Claims without a matching line in your resume count as missing.</p>
+          <ul className="divide-y">{r.requirements.map((q) => (
+            <li key={q.requirement} className="py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`rounded px-2 py-0.5 text-xs font-semibold ${q.verdict === "met" ? "bg-primary text-primary-foreground" : q.verdict === "partial" ? "bg-highlight text-highlight-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                  {q.verdict === "met" ? "Met" : q.verdict === "partial" ? "Partial" : "Missing"}
+                </span>
+                <span className="font-medium">{q.requirement}</span>
+                <span className="text-xs text-muted-foreground">{q.importance === "must" ? "Must-have" : "Nice-to-have"}</span>
+              </div>
+              {q.evidence && <p className="mt-1 text-muted-foreground">Your resume: “{q.evidence}”</p>}
+              <p className="mt-1 text-muted-foreground">{q.reasoning}</p>
+            </li>
+          ))}</ul>
+        </Block>
+      )}
       <Block title="Strengths"><ul className="list-disc space-y-1 pl-5">{r.strengths.map((s) => <li key={s}>{s}</li>)}</ul></Block>
       <Block title="Gaps">
         <ul className="space-y-2">{r.gaps.map((g) => (
