@@ -127,6 +127,8 @@ function Board() {
   const { data: profile } = useQuery({ ...profileQuery(user?.id ?? ""), enabled: !!user });
   const { data: apps } = useApplications(user?.id);
   const toggle = useToggleApplied(user?.id);
+  const { data: analyses } = useAnalyses(user?.id);
+  const scores = new Map((analyses ?? []).map((a) => [a.job_url, a.fit_score]));
   const appliedSet = new Set((apps ?? []).map((a) => a.job_url));
   const track = (j: Job) => {
     const applied = appliedSet.has(j.url);
@@ -151,6 +153,7 @@ function Board() {
           <BrandLockup />
           <nav className="ml-auto flex items-center gap-3 text-sm">
             <span className="text-muted-foreground">Hi, {profile?.display_name ?? user?.email}</span>
+            <Link to="/my-resume" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">My resume</Link>
             <Link to="/my-applications" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">
               My applications{apps?.length ? ` (${apps.length})` : ""}
             </Link>
@@ -165,7 +168,7 @@ function Board() {
       <section className="mt-8">
         <h2 className="text-2xl font-semibold">New in the last 24 hours</h2>
         <div className="mt-4 space-y-3">
-          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} applied={appliedSet.has(j.url)} onToggle={track(j)} />) :
+          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} applied={appliedSet.has(j.url)} onToggle={track(j)} score={scores.get(j.url)} />) :
             <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No new postings in the last 24 hours.</p>}
         </div>
       </section>
@@ -190,7 +193,7 @@ function Board() {
         </div>
         <p className="mt-3 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
         <div className="mt-4 space-y-3">
-          {list.length ? list.map((j) => <JobCard key={j.url} j={j} applied={appliedSet.has(j.url)} onToggle={track(j)} />) :
+          {list.length ? list.map((j) => <JobCard key={j.url} j={j} applied={appliedSet.has(j.url)} onToggle={track(j)} score={scores.get(j.url)} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
         </div>
       </section>
