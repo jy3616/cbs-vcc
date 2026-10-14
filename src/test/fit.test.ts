@@ -9,7 +9,7 @@ describe("fit scoring", () => {
     expect(scoreRequirements([req({ verdict: "met" }), req({ importance: "nice", verdict: "missing" })])).toBe(75));
   it("partial counts half", () => expect(scoreRequirements([req({ verdict: "partial" })])).toBe(50));
   it("evidence not in resume is downgraded to missing", () =>
-    expect(verifyRequirements([req({ evidence: "led a Series B deal" })], "analyst at a bank")[0]?.verdict).toBe("missing"));
+    expect(verifyRequirements([req({ evidence: "led a Series B deal" })], "analyst at a bank").at(0)?.verdict).toBe("missing"));
   it("real resume quotes keep their verdict", () =>
-    expect(verifyRequirements([req({ evidence: "analyst at a bank" })], "Analyst at a bank, 2 years")[0]?.verdict).toBe("met"));
+    expect(verifyRequirements([req({ evidence: "analyst at a bank" })], "Analyst at a bank, 2 years").at(0)?.verdict).toBe("met"));
 });
