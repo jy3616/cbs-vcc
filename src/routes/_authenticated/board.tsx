@@ -37,8 +37,8 @@ function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; on
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""} ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-muted-foreground">{j.firm}</p>
           <h3 className="text-lg font-semibold leading-snug">
             <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }} className="hover:text-primary hover:underline">{j.title}</Link>
@@ -48,7 +48,7 @@ function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; on
             )}
           </h3>
         </div>
-        <div className="ml-auto flex shrink-0 flex-wrap justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <button onClick={onToggle}
             className={`rounded-md border px-3 py-1.5 text-sm font-medium ${applied ? "border-accent bg-highlight text-highlight-foreground" : "border-input hover:bg-secondary"}`}>
             {applied ? "Applied ✓" : "Mark as applied"}
