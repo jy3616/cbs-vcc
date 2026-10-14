@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { JOBS } from "@/data/jobs";
 import { fitLabelFor, matrixSchema, narrativeSchema, scoreRequirements, verifyRequirements, type FitResult } from "./fit";
 
 function htmlToText(html: string) {
@@ -27,7 +26,7 @@ export const analyzeFit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { jobUrl: string }) => d)
   .handler(async ({ data, context }) => {
-    const job = JOBS.find((j) => j.url === data.jobUrl);
+    const { data: job } = await context.supabase.from("postings").select("firm, title, location, firm_type, focus, role_type, url").eq("url", data.jobUrl).maybeSingle();
     if (!job) throw new Error("This posting is no longer on the board.");
     const { data: resume } = await context.supabase.from("resumes").select("content").eq("user_id", context.userId).maybeSingle();
     if (!resume?.content.trim()) throw new Error("Add your resume on the My Resume page first.");
@@ -38,7 +37,7 @@ export const analyzeFit = createServerFn({ method: "POST" })
     const description = await fetchDescription(job.url);
     const posting = [
       `Firm: ${job.firm}`, `Title: ${job.title}`, `Location: ${job.location || "not stated"}`,
-      `Firm type: ${job.firmType}`, `Focus: ${job.focus || "not stated"}`, `Role type: ${job.roleType}`,
+      `Firm type: ${job.firmType}`, `Focus: ${job.focus || "not stated"}`, `Role type: ${job.role_type}`,
       description ? `Full posting page text:\n${description}` : "Full description could not be retrieved; rely only on the fields above and do not invent requirements.",
     ].join("\n");
 

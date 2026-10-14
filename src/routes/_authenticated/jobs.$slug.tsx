@@ -1,22 +1,18 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { BrandLockup } from "@/components/BrandLockup";
-import { JOBS } from "@/data/jobs";
+import { usePostings } from "@/lib/postings";
+import { StatusLabel } from "@/components/StatusLabel";
 import { jobSlug, type FitResult } from "@/lib/fit";
 import { analyzeFit } from "@/lib/fit.functions";
 import { useSessionUser } from "@/lib/applications";
 import { resumeQuery, useAnalyses } from "@/lib/resume";
 
 export const Route = createFileRoute("/_authenticated/jobs/$slug")({
-  loader: ({ params }) => {
-    const job = JOBS.find((j) => jobSlug(j) === params.slug);
-    if (!job) throw notFound();
-    return { job };
-  },
-  head: ({ loaderData }) => {
-    const t = loaderData ? `${loaderData.job.title} at ${loaderData.job.firm}` : "Posting";
+  head: () => {
+    const t = "Job posting";
     return {
       meta: [
         { title: `${t} · CBS Venture Capital Club Job Board` },
@@ -28,19 +24,26 @@ export const Route = createFileRoute("/_authenticated/jobs/$slug")({
       ],
     };
   },
-  notFoundComponent: () => (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <p>This posting is no longer on the board.</p>
-      <Link to="/board" className="text-primary hover:underline">← Back to job board</Link>
-    </div>
-  ),
   component: JobDetail,
 });
 
 const fmt = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 function JobDetail() {
-  const { job } = Route.useLoaderData();
+  const { slug } = Route.useParams();
+  const { data: postings, isLoading } = usePostings();
+  const job = postings?.find((j) => jobSlug(j) === slug);
+  if (isLoading) return <div className="mx-auto max-w-4xl px-4 py-10 text-sm text-muted-foreground">Loading…</div>;
+  if (!job) return (
+    <div className="mx-auto max-w-4xl px-4 py-10">
+      <p>This posting is no longer on the board.</p>
+      <Link to="/board" className="text-primary hover:underline">← Back to job board</Link>
+    </div>
+  );
+  return <JobDetailBody job={job} />;
+}
+
+function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
   const { user } = useSessionUser();
   const qc = useQueryClient();
   const { data: resume, isLoading: resumeLoading } = useQuery({ ...resumeQuery(user?.id ?? ""), enabled: !!user });
@@ -74,12 +77,13 @@ function JobDetail() {
         <p className="text-sm font-semibold text-muted-foreground">{job.firm}</p>
         <h1 className="text-2xl font-bold text-primary sm:text-3xl">{job.title}</h1>
         <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
+          <StatusLabel p={job} className="text-sm" />
           {[job.roleType, job.firmType, job.focus, job.location].filter(Boolean).map((t) => (
             <span key={t} className="rounded bg-secondary px-2 py-0.5 text-secondary-foreground">{t}</span>
           ))}
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          Posted {fmt(job.datePosted)}{job.deadline && ` · Deadline ${fmt(job.deadline)}`}
+          Posted {fmt(job.datePosted)} · {job.rolling || !job.deadline ? "Rolling / no deadline" : `Deadline ${fmt(job.deadline)}`} · Last verified {new Date(job.lastVerified).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
         </p>
         <a href={job.url} target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
