@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { FallingLogos } from "@/components/FallingLogos";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { isNew, type Job } from "@/data/jobs";
@@ -125,15 +124,6 @@ function Board() {
     return [...byDate.filter((j) => !isInactive(postingStatus(j, today))), ...byDate.filter((j) => isInactive(postingStatus(j, today)))];
   }, [JOBS, q, role, loc, firm, sector, sort, hideExpired, today]);
 
-  const [showLogos, setShowLogos] = useState(false);
-  useEffect(() => {
-    const key = "cbs-logo-shower-shown";
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, "1");
-    setShowLogos(true);
-    const t = setTimeout(() => setShowLogos(false), 6500);
-    return () => clearTimeout(t);
-  }, []);
   const { user } = useSessionUser();
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -161,7 +151,6 @@ function Board() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
-      {showLogos && <FallingLogos />}
       <header className="border-b pb-6">
         <div className="mb-4 flex flex-wrap items-center gap-4">
           <BrandLockup />

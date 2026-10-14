@@ -67,7 +67,6 @@ function SignInPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: p.data.email, password: p.data.password });
         if (error) throw error;
-        sessionStorage.removeItem("cbs-logo-shower-shown");
         nav({ to: "/board" });
       }
     } catch (err) {
