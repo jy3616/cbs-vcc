@@ -9,6 +9,7 @@
 - Sign-in page first: `/` is the sign-in page, the board moved to `/board` behind the gate
 - Renamed to "CBS Venture Capital Club Job Board" (titles, headings, tab icon metadata); heading keeps "CBS Venture Capital Club" on one line
 - Removed the falling CBS logo animation at the user's request; header logos stay static and do not fall
+- Posting card buttons ("Mark as applied", "Check My Fit", "Apply") stay aligned to the right edge of the card at every window width
 - Header logo lockup is now a link back to the job board; it also appears on "My applications"
 
 - Resume Match: My resume page, job detail pages with Check My Fit + Interview Prep, saved results, Regenerate, fit badges on cards
