@@ -13,5 +13,7 @@
 
 - Resume Match: My resume page, job detail pages with Check My Fit + Interview Prep, saved results, Regenerate, fit badges on cards
 
+- Deadline tracking: status labels, deadline sort, hide-expired toggle, admin page, daily link check
+
 ## Open
 - Next daily update run: add new postings, drop closed ones

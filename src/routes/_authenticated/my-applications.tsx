@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BrandLockup } from "@/components/BrandLockup";
 import { useApplications, useSessionUser, useToggleApplied } from "@/lib/applications";
+import { usePostings } from "@/lib/postings";
+import { StatusLabel } from "@/components/StatusLabel";
 
 export const Route = createFileRoute("/_authenticated/my-applications")({
   head: () => ({
@@ -21,6 +23,8 @@ function MyApplications() {
   const { user } = useSessionUser();
   const { data, isLoading } = useApplications(user?.id);
   const toggle = useToggleApplied(user?.id);
+  const { data: postings } = usePostings();
+  const byUrl = new Map((postings ?? []).map((p) => [p.url, p]));
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
@@ -40,6 +44,11 @@ function MyApplications() {
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-muted-foreground">{a.firm}</p>
                 <a href={a.job_url} target="_blank" rel="noopener noreferrer" className="text-lg font-semibold hover:underline">{a.title}</a>
+                <div className="mt-1">
+                  {byUrl.get(a.job_url)
+                    ? <StatusLabel p={byUrl.get(a.job_url)!} />
+                    : <span className="text-xs font-bold text-destructive">Expired – no longer accepting applications</span>}
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Applied {new Date(a.applied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </p>

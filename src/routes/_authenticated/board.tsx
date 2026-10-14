@@ -3,7 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { FallingLogos } from "@/components/FallingLogos";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { JOBS, LAST_UPDATED, isNew, type Job } from "@/data/jobs";
+import { isNew, type Job } from "@/data/jobs";
+import { StatusLabel } from "@/components/StatusLabel";
+import { fmtDay, useIsAdmin, usePostings } from "@/lib/postings";
+import { isInactive, postingStatus, sortByStatus, todayET } from "@/lib/status";
 import { BrandLockup } from "@/components/BrandLockup";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery, useApplications, useSessionUser, useToggleApplied } from "@/lib/applications";
@@ -27,9 +30,6 @@ export const Route = createFileRoute("/_authenticated/board")({
 const fmtDate = (d: string) =>
   d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
 
-const updated = new Date(LAST_UPDATED).toLocaleString("en-US", {
-  timeZone: "America/New_York", dateStyle: "long", timeStyle: "short",
-});
 
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
@@ -37,7 +37,7 @@ const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" 
 function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; onToggle: () => void; score?: number | undefined }) {
   const hl = j.nyc || j.mentionsMba;
   return (
-    <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""}`}>
+    <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""} ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-muted-foreground">{j.firm}</p>
@@ -65,6 +65,7 @@ function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; on
         </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
+        <StatusLabel p={j} />
         {j.nyc && <span className="rounded bg-highlight px-2 py-0.5 font-semibold text-highlight-foreground">NYC</span>}
         {j.mentionsMba && <span className="rounded bg-highlight px-2 py-0.5 font-semibold text-highlight-foreground">MBA</span>}
         {[j.roleType, j.firmType, j.focus].filter(Boolean).map((t) => (
@@ -74,7 +75,8 @@ function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; on
       <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
         {j.location && <div><dt className="sr-only">Location</dt>{j.location}</div>}
         <div>Posted {fmtDate(j.datePosted)}</div>
-        {j.deadline && <div className="font-medium text-foreground">Deadline {fmtDate(j.deadline)}</div>}
+        <div className="font-medium text-foreground">{j.rolling || !j.deadline ? "Rolling / no deadline" : `Deadline ${fmtDate(j.deadline)}`}</div>
+        <div>Last verified {fmtDay(j.lastVerified)}</div>
       </dl>
     </article>
   );
@@ -99,19 +101,29 @@ function Board() {
   const [loc, setLoc] = useState("");
   const [firm, setFirm] = useState("");
   const [sector, setSector] = useState("");
-  const [sort, setSort] = useState<"new" | "old">("new");
+  const [sort, setSort] = useState<"deadline" | "new" | "old">("deadline");
+  const [hideExpired, setHideExpired] = useState(true);
+  const { data: JOBS = [] } = usePostings();
+  const today = todayET();
 
-  const now = new Date(LAST_UPDATED);
-  const fresh = JOBS.filter((j) => isNew(j, now));
+  const now = new Date();
+  const fresh = JOBS.filter((j) => isNew(j, now) && !isInactive(postingStatus(j, today)));
+  const lastVerified = JOBS.reduce((m, j) => (j.lastVerified > m ? j.lastVerified : m), "");
+  const openCount = JOBS.filter((j) => !isInactive(postingStatus(j, today))).length;
 
   const list = useMemo(() => {
     const s = q.toLowerCase();
-    return JOBS.filter((j) =>
+    const filtered = JOBS.filter((j) =>
+      (!hideExpired || !isInactive(postingStatus(j, today))) &&
       (!role || j.roleType === role) && (!loc || locBucket(j) === loc) && (!firm || j.firmType === firm) &&
       (!sector || j.sectors.includes(sector)) &&
       (!s || [j.firm, j.title, j.location, j.focus].join(" ").toLowerCase().includes(s)),
-    ).sort((a, b) => (sort === "new" ? b.datePosted.localeCompare(a.datePosted) : a.datePosted.localeCompare(b.datePosted)));
-  }, [q, role, loc, firm, sector, sort]);
+    );
+    const byDate = filtered.sort((a, b) => (sort === "old" ? a.datePosted.localeCompare(b.datePosted) : b.datePosted.localeCompare(a.datePosted)));
+    if (sort === "deadline") return sortByStatus(byDate, today);
+    // Date sorts still keep deadline-passed and expired postings at the bottom.
+    return [...byDate.filter((j) => !isInactive(postingStatus(j, today))), ...byDate.filter((j) => isInactive(postingStatus(j, today)))];
+  }, [JOBS, q, role, loc, firm, sector, sort, hideExpired, today]);
 
   const [showLogos, setShowLogos] = useState(false);
   useEffect(() => {
@@ -128,6 +140,7 @@ function Board() {
   const { data: profile } = useQuery({ ...profileQuery(user?.id ?? ""), enabled: !!user });
   const { data: apps } = useApplications(user?.id);
   const toggle = useToggleApplied(user?.id);
+  const { data: isAdmin } = useIsAdmin(user?.id);
   const { data: analyses } = useAnalyses(user?.id);
   const scores = new Map((analyses ?? []).map((a) => [a.job_url, a.fit_score]));
   const appliedSet = new Set((apps ?? []).map((a) => a.job_url));
@@ -154,6 +167,7 @@ function Board() {
           <BrandLockup />
           <nav className="ml-auto flex items-center gap-3 text-sm">
             <span className="text-muted-foreground">Hi, {profile?.display_name ?? user?.email}</span>
+            {isAdmin && <Link to="/admin" className="rounded-md border border-primary px-3 py-1.5 font-medium text-primary hover:bg-secondary">Admin</Link>}
             <Link to="/my-resume" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">My resume</Link>
             <Link to="/my-applications" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">
               My applications{apps?.length ? ` (${apps.length})` : ""}
@@ -163,7 +177,7 @@ function Board() {
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
         <h1 className="mt-2 text-2xl font-bold text-primary sm:text-4xl sm:text-5xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
-        <p className="mt-3 text-sm text-muted-foreground">Last updated: {updated} ET · {JOBS.length} open postings</p>
+        <p className="mt-3 text-sm text-muted-foreground">Last verified: {lastVerified ? fmtDay(lastVerified) : "—"} · {openCount} open postings</p>
       </header>
 
       <section className="mt-8">
@@ -184,15 +198,20 @@ function Board() {
           <Select label="Firm type" value={firm} onChange={setFirm} options={uniq(JOBS.map((j) => j.firmType))} />
           <Select label="Sector" value={sector} onChange={setSector} options={uniq(JOBS.flatMap((j) => j.sectors))} />
           <label className="col-span-2 flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-            Sort by date posted
-            <select value={sort} onChange={(e) => setSort(e.target.value as "new" | "old")}
+            Sort
+            <select value={sort} onChange={(e) => setSort(e.target.value as "deadline" | "new" | "old")}
               className="rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground">
-              <option value="new">Newest first</option>
-              <option value="old">Oldest first</option>
+              <option value="deadline">Soonest deadline first</option>
+              <option value="new">Newest posted first</option>
+              <option value="old">Oldest posted first</option>
             </select>
           </label>
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
+        <label className="mt-3 flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={hideExpired} onChange={(e) => setHideExpired(e.target.checked)} className="h-4 w-4 accent-primary" />
+          Hide expired postings
+        </label>
+        <p className="mt-2 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
         <div className="mt-4 space-y-3">
           {list.length ? list.map((j) => <JobCard key={j.url} j={j} applied={appliedSet.has(j.url)} onToggle={track(j)} score={scores.get(j.url)} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
