@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import cbsMark from "@/assets/cbs-mark-small.png.asset.json";
+import cbsMark from "@/assets/cbs-logo.svg";
 
 const COUNT = 40;
 
@@ -19,7 +19,7 @@ export function FallingLogos() {
       {drops.map((d, i) => (
         <img
           key={i}
-          src={cbsMark.url}
+          src={cbsMark}
           alt=""
           className="absolute top-0"
           style={{
