@@ -7,6 +7,8 @@ import { JOBS, LAST_UPDATED, isNew, type Job } from "@/data/jobs";
 import { BrandLockup } from "@/components/BrandLockup";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery, useApplications, useSessionUser, useToggleApplied } from "@/lib/applications";
+import { fitLabelFor, jobSlug } from "@/lib/fit";
+import { useAnalyses } from "@/lib/resume";
 
 export const Route = createFileRoute("/_authenticated/board")({
   head: () => ({
@@ -32,14 +34,23 @@ const updated = new Date(LAST_UPDATED).toLocaleString("en-US", {
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
-function JobCard({ j, applied, onToggle }: { j: Job; applied: boolean; onToggle: () => void }) {
+function JobCard({ j, applied, onToggle, score }: { j: Job; applied: boolean; onToggle: () => void; score?: number }) {
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-muted-foreground">{j.firm}</p>
-          <h3 className="text-lg font-semibold leading-snug">{j.title}</h3>
+          <h3 className="text-lg font-semibold leading-snug">
+            <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }} className="hover:text-primary hover:underline">{j.title}</Link>
+            {score !== undefined && (
+              <span className="ml-2 inline-block rounded-full bg-primary px-2 py-0.5 align-middle text-xs font-semibold text-primary-foreground"
+                title={`${fitLabelFor(score)} — your Resume Match score`}>Fit {score}</span>
+            )}
+          </h3>
+          <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }} className="text-xs font-medium text-primary hover:underline">
+            Details & Check My Fit →
+          </Link>
         </div>
         <div className="flex shrink-0 gap-2">
           <button onClick={onToggle}

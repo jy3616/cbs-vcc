@@ -14,6 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
 import { Route as AuthenticatedMyApplicationsRouteImport } from './routes/_authenticated/my-applications'
+import { Route as AuthenticatedMyResumeRouteImport } from './routes/_authenticated/my-resume'
+import { Route as AuthenticatedJobsSlugRouteImport } from './routes/_authenticated/jobs.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,18 +42,32 @@ const AuthenticatedMyApplicationsRoute =
     path: '/my-applications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMyResumeRoute = AuthenticatedMyResumeRouteImport.update({
+  id: '/my-resume',
+  path: '/my-resume',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJobsSlugRoute = AuthenticatedJobsSlugRouteImport.update({
+  id: '/jobs/$slug',
+  path: '/jobs/$slug',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/board': typeof AuthenticatedBoardRoute
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
+  '/my-resume': typeof AuthenticatedMyResumeRoute
+  '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/board': typeof AuthenticatedBoardRoute
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
+  '/my-resume': typeof AuthenticatedMyResumeRoute
+  '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -60,12 +76,26 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/board': typeof AuthenticatedBoardRoute
   '/_authenticated/my-applications': typeof AuthenticatedMyApplicationsRoute
+  '/_authenticated/my-resume': typeof AuthenticatedMyResumeRoute
+  '/_authenticated/jobs/$slug': typeof AuthenticatedJobsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/reset-password' | '/board' | '/my-applications'
+  fullPaths:
+    | '/'
+    | '/reset-password'
+    | '/board'
+    | '/my-applications'
+    | '/my-resume'
+    | '/jobs/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/reset-password' | '/board' | '/my-applications'
+  to:
+    | '/'
+    | '/reset-password'
+    | '/board'
+    | '/my-applications'
+    | '/my-resume'
+    | '/jobs/$slug'
   id:
     | '__root__'
     | '/'
@@ -73,6 +103,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/board'
     | '/_authenticated/my-applications'
+    | '/_authenticated/my-resume'
+    | '/_authenticated/jobs/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,17 +150,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMyApplicationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/my-resume': {
+      id: '/_authenticated/my-resume'
+      path: '/my-resume'
+      fullPath: '/my-resume'
+      preLoaderRoute: typeof AuthenticatedMyResumeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/jobs/$slug': {
+      id: '/_authenticated/jobs/$slug'
+      path: '/jobs/$slug'
+      fullPath: '/jobs/$slug'
+      preLoaderRoute: typeof AuthenticatedJobsSlugRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBoardRoute: typeof AuthenticatedBoardRoute
   AuthenticatedMyApplicationsRoute: typeof AuthenticatedMyApplicationsRoute
+  AuthenticatedMyResumeRoute: typeof AuthenticatedMyResumeRoute
+  AuthenticatedJobsSlugRoute: typeof AuthenticatedJobsSlugRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBoardRoute: AuthenticatedBoardRoute,
   AuthenticatedMyApplicationsRoute: AuthenticatedMyApplicationsRoute,
+  AuthenticatedMyResumeRoute: AuthenticatedMyResumeRoute,
+  AuthenticatedJobsSlugRoute: AuthenticatedJobsSlugRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
