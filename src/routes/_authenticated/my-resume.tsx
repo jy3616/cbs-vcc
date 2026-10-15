@@ -29,10 +29,15 @@ function MyResume() {
   const { data: files } = useQuery({
     queryKey: ["resume-file", user?.id ?? ""],
     enabled: !!user,
+    refetchInterval: 45 * 60 * 1000, // keep the signed preview link fresh
     queryFn: async () => {
       const { data: list, error } = await supabase.storage.from("resumes").list(user!.id);
       if (error) throw error;
-      return (list ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder");
+      const real = (list ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder");
+      return Promise.all(real.map(async (f) => {
+        const { data: signed } = await supabase.storage.from("resumes").createSignedUrl(`${user!.id}/${f.name}`, 3600);
+        return { name: f.name, url: signed?.signedUrl ?? null };
+      }));
     },
   });
   const storedFile = files?.[0];
@@ -72,15 +77,6 @@ function MyResume() {
     qc.invalidateQueries({ queryKey: ["resume-file", user.id] });
   }
 
-  async function previewFile() {
-    if (!user || !storedFile) return;
-    // Open the tab synchronously so browsers don't treat it as a blocked popup.
-    const win = window.open("", "_blank");
-    const { data: signed, error } = await supabase.storage.from("resumes").createSignedUrl(`${user.id}/${storedFile.name}`, 300);
-    if (error || !signed) { win?.close(); toast.error(error?.message ?? "Couldn't open the file."); return; }
-    if (win) { win.opener = null; win.location.href = signed.signedUrl; }
-    else window.location.href = signed.signedUrl;
-  }
 
   async function remove() {
     if (!user || !confirm("Delete your saved resume?")) return;
@@ -118,10 +114,11 @@ function MyResume() {
         </details>
       )}
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        {storedFile && (
-          <button onClick={previewFile} className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-secondary">
-            Preview original file
-          </button>
+        {storedFile?.url && (
+          <a href={storedFile.url} target="_blank" rel="noopener noreferrer"
+            className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-secondary">
+            Preview original file ({storedFile.name})
+          </a>
         )}
         {data && (
           <button onClick={remove} className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-secondary">
