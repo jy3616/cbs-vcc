@@ -16,7 +16,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
             error: null,
           }),
       }),
-      update: (u: Record<string, unknown>) => ({
+      update: (u: Omit<CapturedUpdate, "id">) => ({
         eq: (_col: string, id: string) => {
           updates.push({ id, ...u });
           return Promise.resolve({ error: null });
