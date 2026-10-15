@@ -26,6 +26,21 @@ function MyResume() {
   const { user } = useSessionUser();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ ...resumeQuery(user?.id ?? ""), enabled: !!user });
+  const { data: files } = useQuery({
+    queryKey: ["resume-file", user?.id ?? ""],
+    enabled: !!user,
+    refetchInterval: 45 * 60 * 1000, // keep the signed preview link fresh
+    queryFn: async () => {
+      const { data: list, error } = await supabase.storage.from("resumes").list(user!.id);
+      if (error) throw error;
+      const real = (list ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder");
+      return Promise.all(real.map(async (f) => {
+        const { data: signed } = await supabase.storage.from("resumes").createSignedUrl(`${user!.id}/${f.name}`, 3600);
+        return { name: f.name, url: signed?.signedUrl ?? null };
+      }));
+    },
+  });
+  const storedFile = files?.[0];
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => { if (data) setText(data.content); }, [data]);
@@ -48,20 +63,32 @@ function MyResume() {
       return;
     }
     const { error } = await supabase.from("resumes").upsert({ user_id: user.id, content, updated_at: new Date().toISOString() });
+    if (error) { setBusy(false); toast.error(error.message); return; }
+    // Replace any previously stored file, then save this one for preview.
+    const { data: old } = await supabase.storage.from("resumes").list(user.id);
+    const stale = (old ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder").map((f) => `${user.id}/${f.name}`);
+    if (stale.length) await supabase.storage.from("resumes").remove(stale);
+    const { error: upErr } = await supabase.storage.from("resumes").upload(`${user.id}/${file.name}`, file, { upsert: true });
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (upErr) { toast.error(`Resume text saved, but the file preview couldn't be stored: ${upErr.message}`); }
+    else toast.success(`Resume uploaded: ${file.name}`);
     setText(content);
-    toast.success(`Resume uploaded: ${file.name}`);
     qc.invalidateQueries({ queryKey: ["resume", user.id] });
+    qc.invalidateQueries({ queryKey: ["resume-file", user.id] });
   }
+
 
   async function remove() {
     if (!user || !confirm("Delete your saved resume?")) return;
     const { error } = await supabase.from("resumes").delete().eq("user_id", user.id);
     if (error) { toast.error(error.message); return; }
+    const { data: old } = await supabase.storage.from("resumes").list(user.id);
+    const stale = (old ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder").map((f) => `${user.id}/${f.name}`);
+    if (stale.length) await supabase.storage.from("resumes").remove(stale);
     setText("");
     toast.success("Resume deleted");
     qc.invalidateQueries({ queryKey: ["resume", user.id] });
+    qc.invalidateQueries({ queryKey: ["resume-file", user.id] });
   }
 
   return (
@@ -87,6 +114,12 @@ function MyResume() {
         </details>
       )}
       <div className="mt-3 flex flex-wrap items-center gap-3">
+        {storedFile?.url && (
+          <a href={storedFile.url} target="_blank" rel="noopener noreferrer"
+            className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-secondary">
+            Preview original file ({storedFile.name})
+          </a>
+        )}
         {data && (
           <button onClick={remove} className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-secondary">
             Delete resume
