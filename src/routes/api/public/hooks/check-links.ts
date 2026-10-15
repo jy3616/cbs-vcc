@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Daily link check (called by the scheduler). Requires a bearer token as a stray-traffic filter.
+// Hourly link check (called by the scheduler). Requires a bearer token as a stray-traffic filter.
 // Safe to replay: it only re-checks real links and raises "Needs review" flags; it never expires or deletes postings.
 export const Route = createFileRoute("/api/public/hooks/check-links")({
   server: {
