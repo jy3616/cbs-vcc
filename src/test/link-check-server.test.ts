@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const updates: Record<string, unknown>[] = [];
+type CapturedUpdate = { id: string; last_verified_at?: string; needs_review?: boolean; review_reason?: string };
+const updates: CapturedUpdate[] = [];
 
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
