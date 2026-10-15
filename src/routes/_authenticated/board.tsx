@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { isNew, type Job } from "@/data/jobs";
 import { StatusLabel } from "@/components/StatusLabel";
-import { fmtDay, useIsAdmin, usePostings } from "@/lib/postings";
+import { fmtDay, usePostings } from "@/lib/postings";
 import { isInactive, postingStatus, sortByStatus, todayET } from "@/lib/status";
 import { BrandLockup } from "@/components/BrandLockup";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,7 +130,6 @@ function Board() {
   const { data: profile } = useQuery({ ...profileQuery(user?.id ?? ""), enabled: !!user });
   const { data: apps } = useApplications(user?.id);
   const toggle = useToggleApplied(user?.id);
-  const { data: isAdmin } = useIsAdmin(user?.id);
   const { data: analyses } = useAnalyses(user?.id);
   const scores = new Map((analyses ?? []).map((a) => [a.job_url, a.fit_score]));
   const appliedSet = new Set((apps ?? []).map((a) => a.job_url));
@@ -156,7 +155,6 @@ function Board() {
           <BrandLockup />
           <nav className="ml-auto flex items-center gap-3 text-sm">
             <span className="text-muted-foreground">Hi, {profile?.display_name ?? user?.email}</span>
-            {isAdmin && <Link to="/admin" className="rounded-md border border-primary px-3 py-1.5 font-medium text-primary hover:bg-secondary">Admin</Link>}
             <Link to="/my-resume" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">My resume</Link>
             <Link to="/my-applications" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">
               My applications{apps?.length ? ` (${apps.length})` : ""}
