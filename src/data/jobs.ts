@@ -26,5 +26,7 @@ export interface Job {
 
 export function isNew(job: Pick<Job, "datePosted">, now: Date) {
   const posted = new Date(job.datePosted + "T00:00:00-04:00").getTime();
-  return now.getTime() - posted <= 24 * 3600 * 1000 * 1.5 && posted <= now.getTime();
+  // A posting dated "today" (midnight ET) must count as new all day, so allow
+  // the date to be up to 24h ahead of now before calling it future-dated.
+  return now.getTime() - posted <= 24 * 3600 * 1000 * 1.5 && posted - now.getTime() <= 24 * 3600 * 1000;
 }
