@@ -32,7 +32,7 @@ export function BrandLockup({ size = "lg", asLink = true }: Props) {
 
   return (
     <Link
-      to="/board"
+      to="/"
       title="Go to the job board"
       aria-label="Go to the job board"
       className="flex flex-wrap items-center gap-4 rounded-md hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
