@@ -101,6 +101,7 @@ function Board() {
   const [hideExpired, setHideExpired] = useState(true);
   const { data: JOBS = [] } = usePostings();
   const { map: analyses } = useAnalyses();
+  const { map: bookmarks, toggle: toggleBookmark } = useBookmarks();
   const today = todayET();
 
   const now = new Date();
@@ -139,7 +140,7 @@ function Board() {
       <section className="mt-8">
         <h2 className="text-2xl font-semibold">New in the last 24 hours</h2>
         <div className="mt-4 space-y-3">
-          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} />) :
+          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :
             <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No new postings in the last 24 hours.</p>}
         </div>
       </section>
@@ -169,7 +170,7 @@ function Board() {
         </label>
         <p className="mt-2 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
         <div className="mt-4 space-y-3">
-          {list.length ? list.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} />) :
+          {list.length ? list.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
         </div>
       </section>
