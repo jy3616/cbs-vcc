@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { BrandLockup } from "@/components/BrandLockup";
+import { BoardNav } from "@/components/BoardNav";
 import { usePostings } from "@/lib/postings";
 import { StatusLabel } from "@/components/StatusLabel";
 import { jobSlug, type FitResult } from "@/lib/fit";
@@ -65,7 +66,10 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <BrandLockup />
+      <div className="flex flex-wrap items-center gap-4">
+        <BrandLockup />
+        <BoardNav />
+      </div>
       <div className="mt-6">
         <Link to="/" className="text-sm text-muted-foreground hover:underline">← Back to job board</Link>
       </div>

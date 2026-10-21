@@ -8,6 +8,7 @@ import { BrandLockup } from "@/components/BrandLockup";
 import { fitLabelFor, jobSlug } from "@/lib/fit";
 import { useAnalyses } from "@/lib/resume-store";
 import { useBookmarks } from "@/lib/bookmarks";
+import { BoardNav } from "@/components/BoardNav";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -128,9 +129,7 @@ function Board() {
       <header className="border-b pb-6">
         <div className="mb-4 flex flex-wrap items-center gap-4">
           <BrandLockup />
-          <nav className="ml-auto flex items-center gap-3 text-sm">
-            <Link to="/my-resume" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">My resume</Link>
-          </nav>
+          <BoardNav />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
         <h1 className="mt-2 text-2xl font-bold text-primary sm:text-4xl sm:text-5xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
