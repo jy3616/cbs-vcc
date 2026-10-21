@@ -1,109 +1,160 @@
-import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
-import { useState } from "react";
-import { z } from "zod";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { isNew, type Job } from "@/data/jobs";
+import { StatusLabel } from "@/components/StatusLabel";
+import { fmtDay, usePostings } from "@/lib/postings";
+import { isInactive, postingStatus, sortByStatus, todayET } from "@/lib/status";
 import { BrandLockup } from "@/components/BrandLockup";
 
 export const Route = createFileRoute("/")({
-  ssr: false,
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
-    if (data.user) throw redirect({ to: "/board" });
-  },
   head: () => ({
     meta: [
-      { title: "Sign in · CBS Venture Capital Club Job Board" },
-      { name: "description", content: "Sign in to browse open VC, growth equity and CVC roles for Columbia Business School MBA students." },
+      { title: "CBS Venture Capital Club Job Board" },
+      { name: "description", content: "Daily-updated open VC, growth equity and CVC roles for Columbia Business School MBA students." },
       { property: "og:title", content: "CBS Venture Capital Club Job Board" },
-      { property: "og:description", content: "Sign in to browse open VC roles for Columbia MBA students." },
+      { property: "og:description", content: "Daily-updated open VC roles for Columbia MBA students." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: SignInPage,
+  component: Board,
 });
 
-const schema = z.object({
-  email: z.string().trim().email("Enter a valid email").max(255),
-  password: z.string().min(8, "Password must be at least 8 characters").max(72),
-  name: z.string().trim().max(100).optional(),
-});
+const fmtDate = (d: string) =>
+  d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
 
-const input = "w-full rounded-md border border-input bg-card px-3 py-2 text-sm";
+const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
+const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
-function SignInPage() {
-  const nav = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState("");
+function JobCard({ j }: { j: Job }) {
+  const hl = j.nyc || j.mentionsMba;
+  return (
+    <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""} ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-muted-foreground">{j.firm}</p>
+          <h3 className="text-lg font-semibold leading-snug">{j.title}</h3>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          <a href={j.url} target="_blank" rel="noopener noreferrer"
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
+            Apply ↗
+          </a>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
+        <StatusLabel p={j} />
+        {j.nyc && <span className="rounded bg-highlight px-2 py-0.5 font-semibold text-highlight-foreground">NYC</span>}
+        {j.mentionsMba && <span className="rounded bg-highlight px-2 py-0.5 font-semibold text-highlight-foreground">MBA</span>}
+        {[j.roleType, j.firmType, j.focus].filter(Boolean).map((t) => (
+          <span key={t} className="rounded bg-secondary px-2 py-0.5 text-secondary-foreground">{t}</span>
+        ))}
+      </div>
+      <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
+        {j.location && <div><dt className="sr-only">Location</dt>{j.location}</div>}
+        <div>Posted {fmtDate(j.datePosted)}</div>
+        <div className="font-medium text-foreground">{j.rolling || !j.deadline ? "Rolling / no deadline" : `Deadline ${fmtDate(j.deadline)}`}</div>
+        <div>Last verified {fmtDay(j.lastVerified)}</div>
+      </dl>
+    </article>
+  );
+}
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setMsg("");
-    setBusy(true);
-    try {
-      if (mode === "forgot") {
-        const r = z.string().trim().email().safeParse(email);
-        if (!r.success) throw new Error("Enter a valid email");
-        const { error } = await supabase.auth.resetPasswordForEmail(r.data, { redirectTo: `${window.location.origin}/reset-password` });
-        if (error) throw error;
-        setMsg("Check your email for a reset link.");
-        return;
-      }
-      const p = schema.safeParse({ email, password, name: name || undefined });
-      if (!p.success) throw new Error(p.error.issues[0]?.message ?? "Invalid input");
-      if (mode === "signup") {
-        if (!p.data.name) throw new Error("Enter your name");
-        const { error } = await supabase.auth.signUp({
-          email: p.data.email, password: p.data.password,
-          options: { emailRedirectTo: window.location.origin, data: { display_name: p.data.name } },
-        });
-        if (error) throw error;
-        setMsg("Check your email to confirm your account, then sign in.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: p.data.email, password: p.data.password });
-        if (error) throw error;
-        nav({ to: "/board" });
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setBusy(false);
-    }
-  }
+function Select({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
+  return (
+    <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+      {label}
+      <select value={value} onChange={(e) => onChange(e.target.value)}
+        className="rounded-md border border-input bg-card px-2 py-2 text-sm text-foreground">
+        <option value="">All</option>
+        {options.map((o) => <option key={o}>{o}</option>)}
+      </select>
+    </label>
+  );
+}
 
-  const title = mode === "signup" ? "Create an account" : mode === "forgot" ? "Reset password" : "Sign in";
+function Board() {
+  const [q, setQ] = useState("");
+  const [role, setRole] = useState("");
+  const [loc, setLoc] = useState("");
+  const [firm, setFirm] = useState("");
+  const [sector, setSector] = useState("");
+  const [sort, setSort] = useState<"deadline" | "new" | "old">("deadline");
+  const [hideExpired, setHideExpired] = useState(true);
+  const { data: JOBS = [] } = usePostings();
+  const today = todayET();
+
+  const now = new Date();
+  const fresh = JOBS.filter((j) => isNew(j, now) && !isInactive(postingStatus(j, today)));
+  const lastVerified = JOBS.reduce((m, j) => (j.lastVerified > m ? j.lastVerified : m), "");
+  const openCount = JOBS.filter((j) => !isInactive(postingStatus(j, today))).length;
+
+  const list = useMemo(() => {
+    const s = q.toLowerCase();
+    const filtered = JOBS.filter((j) =>
+      (!hideExpired || !isInactive(postingStatus(j, today))) &&
+      (!role || j.roleType === role) && (!loc || locBucket(j) === loc) && (!firm || j.firmType === firm) &&
+      (!sector || j.sectors.includes(sector)) &&
+      (!s || [j.firm, j.title, j.location, j.focus].join(" ").toLowerCase().includes(s)),
+    );
+    const byDate = filtered.sort((a, b) => (sort === "old" ? a.datePosted.localeCompare(b.datePosted) : b.datePosted.localeCompare(a.datePosted)));
+    if (sort === "deadline") return sortByStatus(byDate, today);
+    // Date sorts still keep deadline-passed and expired postings at the bottom.
+    return [...byDate.filter((j) => !isInactive(postingStatus(j, today))), ...byDate.filter((j) => isInactive(postingStatus(j, today)))];
+  }, [JOBS, q, role, loc, firm, sector, sort, hideExpired, today]);
 
   return (
-    <div className="mx-auto max-w-md px-4 py-12">
-      <div className="mb-6">
-        <BrandLockup size="md" asLink={false} />
-      </div>
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
-      <h1 className="mt-2 text-2xl font-bold text-primary sm:text-3xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Sign in to browse the board and track your applications.</p>
-      <h2 className="mt-6 text-xl font-semibold">{title}</h2>
-      <form onSubmit={submit} className="mt-4 space-y-3">
-        {mode === "signup" && <input className={input} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />}
-        <input className={input} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        {mode !== "forgot" && <input className={input} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />}
-        <button disabled={busy} className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
-          {busy ? "Please wait…" : mode === "signup" ? "Sign up" : mode === "forgot" ? "Send reset link" : "Sign in"}
-        </button>
-        {msg && <p className="text-sm text-foreground">{msg}</p>}
-      </form>
-      <div className="mt-4 flex flex-col gap-1 text-sm text-muted-foreground">
-        {mode !== "signin" && <button className="text-left hover:underline" onClick={() => setMode("signin")}>Have an account? Sign in</button>}
-        {mode !== "signup" && <button className="text-left hover:underline" onClick={() => setMode("signup")}>New here? Create an account</button>}
-        {mode === "signin" && <button className="text-left hover:underline" onClick={() => setMode("forgot")}>Forgot password?</button>}
-      </div>
-      <p className="mt-8 text-xs text-muted-foreground">
+    <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
+      <header className="border-b pb-6">
+        <div className="mb-4 flex flex-wrap items-center gap-4">
+          <BrandLockup />
+        </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
+        <h1 className="mt-2 text-2xl font-bold text-primary sm:text-4xl sm:text-5xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
+        <p className="mt-3 text-sm text-muted-foreground">Last verified: {lastVerified ? fmtDay(lastVerified) : "—"} · {openCount} open postings</p>
+      </header>
+
+      <section className="mt-8">
+        <h2 className="text-2xl font-semibold">New in the last 24 hours</h2>
+        <div className="mt-4 space-y-3">
+          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} />) :
+            <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No new postings in the last 24 hours.</p>}
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold">All postings</h2>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-6">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search firm, title, sector…"
+            className="col-span-2 self-end rounded-md border border-input bg-card px-3 py-2 text-sm sm:col-span-6" />
+          <Select label="Role type" value={role} onChange={setRole} options={uniq(JOBS.map((j) => j.roleType))} />
+          <Select label="Location" value={loc} onChange={setLoc} options={uniq(JOBS.map(locBucket))} />
+          <Select label="Firm type" value={firm} onChange={setFirm} options={uniq(JOBS.map((j) => j.firmType))} />
+          <Select label="Sector" value={sector} onChange={setSector} options={uniq(JOBS.flatMap((j) => j.sectors))} />
+          <label className="col-span-2 flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+            Sort
+            <select value={sort} onChange={(e) => setSort(e.target.value as "deadline" | "new" | "old")}
+              className="rounded-md border border-input bg-card px-2 py-2 text-sm text-foreground">
+              <option value="deadline">Soonest deadline first</option>
+              <option value="new">Newest posted first</option>
+              <option value="old">Oldest posted first</option>
+            </select>
+          </label>
+        </div>
+        <label className="mt-3 flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={hideExpired} onChange={(e) => setHideExpired(e.target.checked)} className="h-4 w-4 accent-primary" />
+          Hide expired postings
+        </label>
+        <p className="mt-2 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
+        <div className="mt-4 space-y-3">
+          {list.length ? list.map((j) => <JobCard key={j.url} j={j} />) :
+            <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
+        </div>
+      </section>
+
+      <footer className="mt-14 border-t pt-6 text-sm text-muted-foreground">
         Postings are gathered from public sources and may change. Always confirm details on the firm's site. Also check CBS Career Management Center resources.
-      </p>
+      </footer>
     </div>
   );
 }

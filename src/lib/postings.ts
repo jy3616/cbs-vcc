@@ -28,17 +28,5 @@ export function usePostings() {
   return useQuery(postingsQuery);
 }
 
-export function useIsAdmin(userId: string | undefined) {
-  return useQuery({
-    queryKey: ["is-admin", userId],
-    enabled: !!userId,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", { _user_id: userId!, _role: "admin" });
-      if (error) throw error;
-      return !!data;
-    },
-  });
-}
-
 export const fmtDay = (d: string) =>
   d ? new Date(d.length === 10 ? d + "T12:00:00" : d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";

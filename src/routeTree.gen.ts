@@ -10,54 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
-import { Route as AuthenticatedMyApplicationsRouteImport } from './routes/_authenticated/my-applications'
-import { Route as AuthenticatedMyResumeRouteImport } from './routes/_authenticated/my-resume'
-import { Route as AuthenticatedJobsSlugRouteImport } from './routes/_authenticated/jobs.$slug'
 import { Route as ApiPublicHooksCheckLinksRouteImport } from './routes/api/public/hooks/check-links'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedBoardRoute = AuthenticatedBoardRouteImport.update({
-  id: '/board',
-  path: '/board',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedMyApplicationsRoute =
-  AuthenticatedMyApplicationsRouteImport.update({
-    id: '/my-applications',
-    path: '/my-applications',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedMyResumeRoute = AuthenticatedMyResumeRouteImport.update({
-  id: '/my-resume',
-  path: '/my-resume',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedJobsSlugRoute = AuthenticatedJobsSlugRouteImport.update({
-  id: '/jobs/$slug',
-  path: '/jobs/$slug',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicHooksCheckLinksRoute =
   ApiPublicHooksCheckLinksRouteImport.update({
@@ -68,74 +26,27 @@ const ApiPublicHooksCheckLinksRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof AuthenticatedAdminRoute
-  '/board': typeof AuthenticatedBoardRoute
-  '/my-applications': typeof AuthenticatedMyApplicationsRoute
-  '/my-resume': typeof AuthenticatedMyResumeRoute
-  '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof AuthenticatedAdminRoute
-  '/board': typeof AuthenticatedBoardRoute
-  '/my-applications': typeof AuthenticatedMyApplicationsRoute
-  '/my-resume': typeof AuthenticatedMyResumeRoute
-  '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/reset-password': typeof ResetPasswordRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/board': typeof AuthenticatedBoardRoute
-  '/_authenticated/my-applications': typeof AuthenticatedMyApplicationsRoute
-  '/_authenticated/my-resume': typeof AuthenticatedMyResumeRoute
-  '/_authenticated/jobs/$slug': typeof AuthenticatedJobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/reset-password'
-    | '/admin'
-    | '/board'
-    | '/my-applications'
-    | '/my-resume'
-    | '/jobs/$slug'
-    | '/api/public/hooks/check-links'
+  fullPaths: '/' | '/api/public/hooks/check-links'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/reset-password'
-    | '/admin'
-    | '/board'
-    | '/my-applications'
-    | '/my-resume'
-    | '/jobs/$slug'
-    | '/api/public/hooks/check-links'
-  id:
-    | '__root__'
-    | '/'
-    | '/_authenticated'
-    | '/reset-password'
-    | '/_authenticated/admin'
-    | '/_authenticated/board'
-    | '/_authenticated/my-applications'
-    | '/_authenticated/my-resume'
-    | '/_authenticated/jobs/$slug'
-    | '/api/public/hooks/check-links'
+  to: '/' | '/api/public/hooks/check-links'
+  id: '__root__' | '/' | '/api/public/hooks/check-links'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicHooksCheckLinksRoute: typeof ApiPublicHooksCheckLinksRoute
 }
 
@@ -148,55 +59,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/board': {
-      id: '/_authenticated/board'
-      path: '/board'
-      fullPath: '/board'
-      preLoaderRoute: typeof AuthenticatedBoardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/my-applications': {
-      id: '/_authenticated/my-applications'
-      path: '/my-applications'
-      fullPath: '/my-applications'
-      preLoaderRoute: typeof AuthenticatedMyApplicationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/my-resume': {
-      id: '/_authenticated/my-resume'
-      path: '/my-resume'
-      fullPath: '/my-resume'
-      preLoaderRoute: typeof AuthenticatedMyResumeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/jobs/$slug': {
-      id: '/_authenticated/jobs/$slug'
-      path: '/jobs/$slug'
-      fullPath: '/jobs/$slug'
-      preLoaderRoute: typeof AuthenticatedJobsSlugRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/api/public/hooks/check-links': {
       id: '/api/public/hooks/check-links'
       path: '/api/public/hooks/check-links'
@@ -207,29 +69,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedBoardRoute: typeof AuthenticatedBoardRoute
-  AuthenticatedMyApplicationsRoute: typeof AuthenticatedMyApplicationsRoute
-  AuthenticatedMyResumeRoute: typeof AuthenticatedMyResumeRoute
-  AuthenticatedJobsSlugRoute: typeof AuthenticatedJobsSlugRoute
-}
-
-const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedBoardRoute: AuthenticatedBoardRoute,
-  AuthenticatedMyApplicationsRoute: AuthenticatedMyApplicationsRoute,
-  AuthenticatedMyResumeRoute: AuthenticatedMyResumeRoute,
-  AuthenticatedJobsSlugRoute: AuthenticatedJobsSlugRoute,
-}
-
-const AuthenticatedRouteRouteWithChildren =
-  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicHooksCheckLinksRoute: ApiPublicHooksCheckLinksRoute,
 }
 export const routeTree = rootRouteImport
