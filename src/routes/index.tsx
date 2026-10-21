@@ -29,7 +29,7 @@ const fmtDate = (d: string) =>
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
-function JobCard({ j, score }: { j: Job; score?: number | undefined }) {
+function JobCard({ j, score, bookmarked, onToggleBookmark }: { j: Job; score?: number | undefined; bookmarked: boolean; onToggleBookmark: () => void }) {
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""} ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
@@ -45,6 +45,11 @@ function JobCard({ j, score }: { j: Job; score?: number | undefined }) {
           </h3>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" onClick={onToggleBookmark} aria-pressed={bookmarked}
+            title={bookmarked ? "Remove bookmark" : "Bookmark this posting"}
+            className={`rounded-md border px-3 py-1.5 text-sm font-medium ${bookmarked ? "border-accent bg-highlight text-highlight-foreground" : "border-input text-muted-foreground hover:bg-secondary"}`}>
+            {bookmarked ? "★ Bookmarked" : "☆ Bookmark"}
+          </button>
           <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }}
             className="rounded-md border border-primary px-3 py-1.5 text-sm font-medium text-primary hover:bg-secondary">
             Check My Fit
