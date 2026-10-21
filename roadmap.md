@@ -16,7 +16,8 @@
 
 - Deadline tracking: status labels, deadline sort, hide-expired toggle, admin page, daily link check
 - Removed the "Admin" button from the board header (admin page still reachable at /admin)
-- Removed sign-in entirely: the board is public at `/`; login, Mark as applied, My applications, My resume, Check My Fit, and the admin page are all deleted
+- Removed sign-in entirely: the board is public at `/`; login, Mark as applied, My applications, and the admin page are all deleted
+- Restored Resume Match without accounts: My resume page (browser-only storage), job detail pages with Check My Fit + Interview Prep, fit badges on cards
 
 ## Open
 - Next daily update run: add new postings, drop closed ones

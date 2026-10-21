@@ -10,11 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MyResumeRouteImport } from './routes/my-resume'
+import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
 import { Route as ApiPublicHooksCheckLinksRouteImport } from './routes/api/public/hooks/check-links'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyResumeRoute = MyResumeRouteImport.update({
+  id: '/my-resume',
+  path: '/my-resume',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobsSlugRoute = JobsSlugRouteImport.update({
+  id: '/jobs/$slug',
+  path: '/jobs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicHooksCheckLinksRoute =
@@ -26,27 +38,41 @@ const ApiPublicHooksCheckLinksRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/my-resume': typeof MyResumeRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/my-resume': typeof MyResumeRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/my-resume': typeof MyResumeRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/public/hooks/check-links'
+  fullPaths:
+    '/' | '/my-resume' | '/jobs/$slug' | '/api/public/hooks/check-links'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/public/hooks/check-links'
-  id: '__root__' | '/' | '/api/public/hooks/check-links'
+  to: '/' | '/my-resume' | '/jobs/$slug' | '/api/public/hooks/check-links'
+  id:
+    | '__root__'
+    | '/'
+    | '/my-resume'
+    | '/jobs/$slug'
+    | '/api/public/hooks/check-links'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MyResumeRoute: typeof MyResumeRoute
+  JobsSlugRoute: typeof JobsSlugRoute
   ApiPublicHooksCheckLinksRoute: typeof ApiPublicHooksCheckLinksRoute
 }
 
@@ -57,6 +83,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-resume': {
+      id: '/my-resume'
+      path: '/my-resume'
+      fullPath: '/my-resume'
+      preLoaderRoute: typeof MyResumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jobs/$slug': {
+      id: '/jobs/$slug'
+      path: '/jobs/$slug'
+      fullPath: '/jobs/$slug'
+      preLoaderRoute: typeof JobsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/check-links': {
@@ -71,6 +111,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MyResumeRoute: MyResumeRoute,
+  JobsSlugRoute: JobsSlugRoute,
   ApiPublicHooksCheckLinksRoute: ApiPublicHooksCheckLinksRoute,
 }
 export const routeTree = rootRouteImport
