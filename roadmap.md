@@ -18,6 +18,7 @@
 - Removed the "Admin" button from the board header (admin page still reachable at /admin)
 - Removed sign-in entirely: the board is public at `/`; login, Mark as applied, My applications, and the admin page are all deleted
 - Restored Resume Match without accounts: My resume page (browser-only storage), job detail pages with Check My Fit + Interview Prep, fit badges on cards
+- Bookmark button on every job card (browser-only localStorage, keyed by job URL)
 
 ## Open
 - Next daily update run: add new postings, drop closed ones
