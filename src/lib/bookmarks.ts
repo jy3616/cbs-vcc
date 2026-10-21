@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
  * touch the server. Keyed by job URL.
  */
 const BOOKMARKS_KEY = "vcc-bookmarks";
+/** Fired on every write so every open copy of the list (header count, page, card) stays in step. */
+const SYNC_EVENT = "vcc-bookmarks-changed";
 
 function load(): Record<string, string> {
   try {
@@ -16,16 +18,29 @@ function load(): Record<string, string> {
   }
 }
 
+function write(all: Record<string, string>) {
+  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(all));
+  window.dispatchEvent(new Event(SYNC_EVENT));
+}
+
 /** Bookmarked job URLs -> ISO date bookmarked, loaded after hydration. */
 export function useBookmarks() {
   const [map, setMap] = useState<Record<string, string>>({});
-  useEffect(() => setMap(load()), []);
+  useEffect(() => {
+    setMap(load());
+    const sync = () => setMap(load());
+    window.addEventListener("storage", sync);
+    window.addEventListener(SYNC_EVENT, sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(SYNC_EVENT, sync);
+    };
+  }, []);
   const toggle = (jobUrl: string) => {
     const all = load();
     if (all[jobUrl]) delete all[jobUrl];
     else all[jobUrl] = new Date().toISOString();
-    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(all));
-    setMap(all);
+    write(all);
   };
   return { map, toggle };
 }
