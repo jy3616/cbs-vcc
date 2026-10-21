@@ -7,6 +7,7 @@ import { isInactive, postingStatus, sortByStatus, todayET } from "@/lib/status";
 import { BrandLockup } from "@/components/BrandLockup";
 import { fitLabelFor, jobSlug } from "@/lib/fit";
 import { useAnalyses } from "@/lib/resume-store";
+import { useBookmarks } from "@/lib/bookmarks";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,7 +29,7 @@ const fmtDate = (d: string) =>
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
-function JobCard({ j, score }: { j: Job; score?: number | undefined }) {
+function JobCard({ j, score, bookmarked, onToggleBookmark }: { j: Job; score?: number | undefined; bookmarked: boolean; onToggleBookmark: () => void }) {
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""} ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
@@ -44,6 +45,11 @@ function JobCard({ j, score }: { j: Job; score?: number | undefined }) {
           </h3>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" onClick={onToggleBookmark} aria-pressed={bookmarked}
+            title={bookmarked ? "Remove bookmark" : "Bookmark this posting"}
+            className={`rounded-md border px-3 py-1.5 text-sm font-medium ${bookmarked ? "border-accent bg-highlight text-highlight-foreground" : "border-input text-muted-foreground hover:bg-secondary"}`}>
+            {bookmarked ? "★ Bookmarked" : "☆ Bookmark"}
+          </button>
           <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }}
             className="rounded-md border border-primary px-3 py-1.5 text-sm font-medium text-primary hover:bg-secondary">
             Check My Fit
@@ -95,6 +101,7 @@ function Board() {
   const [hideExpired, setHideExpired] = useState(true);
   const { data: JOBS = [] } = usePostings();
   const { map: analyses } = useAnalyses();
+  const { map: bookmarks, toggle: toggleBookmark } = useBookmarks();
   const today = todayET();
 
   const now = new Date();
@@ -133,7 +140,7 @@ function Board() {
       <section className="mt-8">
         <h2 className="text-2xl font-semibold">New in the last 24 hours</h2>
         <div className="mt-4 space-y-3">
-          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} />) :
+          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :
             <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No new postings in the last 24 hours.</p>}
         </div>
       </section>
@@ -163,7 +170,7 @@ function Board() {
         </label>
         <p className="mt-2 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
         <div className="mt-4 space-y-3">
-          {list.length ? list.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} />) :
+          {list.length ? list.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
         </div>
       </section>
