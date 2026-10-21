@@ -1,10 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { isNew, type Job } from "@/data/jobs";
 import { StatusLabel } from "@/components/StatusLabel";
 import { fmtDay, usePostings } from "@/lib/postings";
 import { isInactive, postingStatus, sortByStatus, todayET } from "@/lib/status";
 import { BrandLockup } from "@/components/BrandLockup";
+import { fitLabelFor, jobSlug } from "@/lib/fit";
+import { useAnalyses } from "@/lib/resume-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,16 +28,26 @@ const fmtDate = (d: string) =>
 const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
-function JobCard({ j }: { j: Job }) {
+function JobCard({ j, score }: { j: Job; score?: number | undefined }) {
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""} ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-muted-foreground">{j.firm}</p>
-          <h3 className="text-lg font-semibold leading-snug">{j.title}</h3>
+          <h3 className="text-lg font-semibold leading-snug">
+            <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }} className="hover:text-primary hover:underline">{j.title}</Link>
+            {score !== undefined && (
+              <span className="ml-2 inline-block rounded-full bg-primary px-2 py-0.5 align-middle text-xs font-semibold text-primary-foreground"
+                title={`${fitLabelFor(score)} — your Resume Match score`}>Your fit: {score}</span>
+            )}
+          </h3>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
+          <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }}
+            className="rounded-md border border-primary px-3 py-1.5 text-sm font-medium text-primary hover:bg-secondary">
+            Check My Fit
+          </Link>
           <a href={j.url} target="_blank" rel="noopener noreferrer"
             className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
             Apply ↗
@@ -82,6 +94,7 @@ function Board() {
   const [sort, setSort] = useState<"deadline" | "new" | "old">("deadline");
   const [hideExpired, setHideExpired] = useState(true);
   const { data: JOBS = [] } = usePostings();
+  const { map: analyses } = useAnalyses();
   const today = todayET();
 
   const now = new Date();
@@ -108,6 +121,9 @@ function Board() {
       <header className="border-b pb-6">
         <div className="mb-4 flex flex-wrap items-center gap-4">
           <BrandLockup />
+          <nav className="ml-auto flex items-center gap-3 text-sm">
+            <Link to="/my-resume" className="rounded-md border border-input px-3 py-1.5 font-medium hover:bg-secondary">My resume</Link>
+          </nav>
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
         <h1 className="mt-2 text-2xl font-bold text-primary sm:text-4xl sm:text-5xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
@@ -117,7 +133,7 @@ function Board() {
       <section className="mt-8">
         <h2 className="text-2xl font-semibold">New in the last 24 hours</h2>
         <div className="mt-4 space-y-3">
-          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} />) :
+          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} />) :
             <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No new postings in the last 24 hours.</p>}
         </div>
       </section>
@@ -147,7 +163,7 @@ function Board() {
         </label>
         <p className="mt-2 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
         <div className="mt-4 space-y-3">
-          {list.length ? list.map((j) => <JobCard key={j.url} j={j} />) :
+          {list.length ? list.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
         </div>
       </section>
