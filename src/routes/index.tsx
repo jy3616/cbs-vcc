@@ -7,6 +7,7 @@ import { isInactive, postingStatus, sortByStatus, todayET } from "@/lib/status";
 import { BrandLockup } from "@/components/BrandLockup";
 import { fitLabelFor, jobSlug } from "@/lib/fit";
 import { useAnalyses } from "@/lib/resume-store";
+import { useBookmarks } from "@/lib/bookmarks";
 
 export const Route = createFileRoute("/")({
   head: () => ({
