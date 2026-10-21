@@ -34,14 +34,15 @@ function Bookmarks() {
 
   const saved = useMemo(() => {
     const urls = Object.keys(bookmarks);
+    const at = (u: string) => bookmarks[u] ?? "";
     const rows = urls
-      .map((u) => ({ job: JOBS.find((j) => j.url === u), at: bookmarks[u] }))
+      .map((u) => ({ job: JOBS.find((j) => j.url === u), at: at(u) }))
       .filter((r): r is { job: NonNullable<typeof r.job>; at: string } => !!r.job)
       // Most recently bookmarked first.
       .sort((a, b) => b.at.localeCompare(a.at));
     const gone = urls
       .filter((u) => !JOBS.some((j) => j.url === u))
-      .sort((a, b) => bookmarks[b].localeCompare(bookmarks[a]));
+      .sort((a, b) => at(b).localeCompare(at(a)));
     return { rows, gone };
   }, [JOBS, bookmarks]);
 
