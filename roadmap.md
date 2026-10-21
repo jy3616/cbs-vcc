@@ -19,6 +19,7 @@
 - Removed sign-in entirely: the board is public at `/`; login, Mark as applied, My applications, and the admin page are all deleted
 - Restored Resume Match without accounts: My resume page (browser-only storage), job detail pages with Check My Fit + Interview Prep, fit badges on cards
 - Bookmark button on every job card (browser-only localStorage, keyed by job URL)
+- Bookmarks page at /bookmarks from the header ("My resume" + "Bookmarks (n)"): saved postings newest first, each with remove, Check My Fit and Apply; saved links that left the board are listed separately
 - Scraped Indeed/Glassdoor/other job sites for VC postings: added 6 verified roles (HOF Capital Analyst, Associate, Fall 2026 Intern; J2 Ventures Associate; Intermountain Ventures Analyst; Impression Ventures Analyst) — board now 20 postings
 
 ## Open
