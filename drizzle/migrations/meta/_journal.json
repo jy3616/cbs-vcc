@@ -29,6 +29,13 @@
       "when": 1792091925441,
       "tag": "0003_resume_storage_owner_only",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792550322401,
+      "tag": "0004_public_read_postings",
+      "breakpoints": true
     }
   ]
 }
