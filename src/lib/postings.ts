@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { getBoardData } from './board.functions';
 import type { Database } from "@/integrations/supabase/types";
 import type { Job } from "@/data/jobs";
 
@@ -18,10 +18,15 @@ export function rowToJob(r: Row): Job {
 export const postingsQuery = queryOptions({
   queryKey: ["postings"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("postings").select("*").order("date_posted", { ascending: false });
-    if (error) throw error;
-    return data.map(rowToJob);
+    const data = await getBoardData();
+    return data.postings.map(rowToJob);
   },
+});
+
+export const verificationQuery = queryOptions({
+  queryKey: ['verification-run'],
+  queryFn: async () => (await getBoardData()).lastVerified,
+  staleTime: 60000,
 });
 
 export function usePostings() {

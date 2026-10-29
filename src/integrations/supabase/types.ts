@@ -112,6 +112,8 @@ export type Database = {
           role_type: string
           rolling: boolean
           sectors: string[]
+          source_id: string | null
+          source_job_id: string | null
           title: string
           url: string
         }
@@ -134,6 +136,8 @@ export type Database = {
           role_type?: string
           rolling?: boolean
           sectors?: string[]
+          source_id?: string | null
+          source_job_id?: string | null
           title: string
           url: string
         }
@@ -156,10 +160,20 @@ export type Database = {
           role_type?: string
           rolling?: boolean
           sectors?: string[]
+          source_id?: string | null
+          source_job_id?: string | null
           title?: string
           url?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "postings_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -197,6 +211,135 @@ export type Database = {
         }
         Relationships: []
       }
+      scrape_runs: {
+        Row: {
+          ended_at: string | null
+          errors: Json
+          id: string
+          postings_added: number
+          postings_expired: number
+          postings_updated: number
+          run_date: string
+          source_results: Json
+          sources_checked: number
+          sources_expected: number
+          sources_succeeded: number
+          started_at: string
+          status: string
+        }
+        Insert: {
+          ended_at?: string | null
+          errors?: Json
+          id?: string
+          postings_added?: number
+          postings_expired?: number
+          postings_updated?: number
+          run_date: string
+          source_results?: Json
+          sources_checked?: number
+          sources_expected?: number
+          sources_succeeded?: number
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          ended_at?: string | null
+          errors?: Json
+          id?: string
+          postings_added?: number
+          postings_expired?: number
+          postings_updated?: number
+          run_date?: string
+          source_results?: Json
+          sources_checked?: number
+          sources_expected?: number
+          sources_succeeded?: number
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      scrape_source_runs: {
+        Row: {
+          ended_at: string | null
+          run_id: string
+          source_id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          ended_at?: string | null
+          run_id: string
+          source_id: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          ended_at?: string | null
+          run_id?: string
+          source_id?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scrape_source_runs_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "scrape_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scrape_source_runs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sources: {
+        Row: {
+          active: boolean
+          ats_board: string
+          ats_type: string
+          careers_url: string
+          created_at: string
+          firm_name: string
+          firm_type: string
+          id: string
+          needs_review: boolean
+          review_reason: string
+          verified_at: string | null
+        }
+        Insert: {
+          active?: boolean
+          ats_board?: string
+          ats_type?: string
+          careers_url: string
+          created_at?: string
+          firm_name: string
+          firm_type?: string
+          id?: string
+          needs_review?: boolean
+          review_reason?: string
+          verified_at?: string | null
+        }
+        Update: {
+          active?: boolean
+          ats_board?: string
+          ats_type?: string
+          careers_url?: string
+          created_at?: string
+          firm_name?: string
+          firm_type?: string
+          id?: string
+          needs_review?: boolean
+          review_reason?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -220,6 +363,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_source_scrape: {
+        Args: { p_date: string; p_source: string }
+        Returns: string
+      }
+      finish_source_scrape: {
+        Args: {
+          p_error?: string
+          p_jobs: Json
+          p_run: string
+          p_source: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
