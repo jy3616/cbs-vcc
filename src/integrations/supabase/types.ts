@@ -68,6 +68,30 @@ export type Database = {
         }
         Relationships: []
       }
+      job_runs: {
+        Row: {
+          last_result: Json | null
+          last_run_at: string | null
+          locked_until: string | null
+          name: string
+          paused_reason: string
+        }
+        Insert: {
+          last_result?: Json | null
+          last_run_at?: string | null
+          locked_until?: string | null
+          name: string
+          paused_reason?: string
+        }
+        Update: {
+          last_result?: Json | null
+          last_run_at?: string | null
+          locked_until?: string | null
+          name?: string
+          paused_reason?: string
+        }
+        Relationships: []
+      }
       postings: {
         Row: {
           created_at: string
