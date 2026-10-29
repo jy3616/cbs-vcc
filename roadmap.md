@@ -23,4 +23,7 @@
 - Scraped Indeed/Glassdoor/other job sites for VC postings: added 6 verified roles (HOF Capital Analyst, Associate, Fall 2026 Intern; J2 Ventures Associate; Intermountain Ventures Analyst; Impression Ventures Analyst) — board now 20 postings
 
 ## Open
-- Next daily update run: add new postings, drop closed ones
+- Diagnose empty board and correct loading/error and verification displays
+- Add source registry (30 verified firms) and scrape run history
+- Replace search discovery with source-based ATS/HTML checks, deduplication and confirmed expiration
+- Schedule checks around 6am ET and run once now; verify visible results and source outcomes
