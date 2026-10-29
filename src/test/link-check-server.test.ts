@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-type CapturedUpdate = { id: string; last_verified_at?: string; needs_review?: boolean; review_reason?: string };
+type CapturedUpdate = { id: string; last_verified_at?: string; needs_review?: boolean; review_reason?: string; expired?: boolean };
 const updates: CapturedUpdate[] = [];
 
 vi.mock("@/integrations/supabase/client.server", () => ({
@@ -45,12 +45,14 @@ describe("hourly link check", () => {
     const result = await runLinkCheck();
     expect(result).toEqual({ checked: 2, flagged: 1 });
 
-    const ok = updates.find((u) => u.id === "ok")!;
-    const bad = updates.find((u) => u.id === "bad")!;
+    const ok = updates.find((u) => u.id === "ok");
+    const bad = updates.find((u) => u.id === "bad");
+    if (!ok || !bad) throw new Error('Expected both checks');
     expect(ok.last_verified_at).toBeTruthy();
     expect(ok.needs_review).toBeUndefined();
     expect(bad.last_verified_at).toBeUndefined();
     expect(bad.needs_review).toBe(true);
     expect(bad.review_reason).toBe("Link returns 404 page not found");
+    expect(bad.expired).toBe(true);
   });
 });

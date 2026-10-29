@@ -7,7 +7,7 @@ export const roleKey = (firm: string, title: string) => `${firm}|${title}`.toLow
 export const isLinkedIn = (url: string) => { try { return /(^|\.)linkedin\.com$/i.test(new URL(url).hostname); } catch { return true; } };
 
 export function investmentRole(title: string, department = '') {
-  if (/engineer|sales|account executive|software|developer|recruit|human resources|legal|compliance|accounting|finance operations|financial planning|fund operations|IT support|data scientist|executive assistant/i.test(title)) return false;
+  if (/engineer|sales|account executive|software|developer|recruit|human resources|talent sourcing|legal|compliance|accounting|finance operations|financial planning|fund operations|IT support|data scientist|executive assistant|product manager|secondary investments|primary investments|talent network/i.test(title)) return false;
   const eligible = /\banalyst\b|\bassociate\b|\bprincipal\b|vice president|\bvp\b|MBA.*intern|summer associate|investment team|platform|scout/i.test(title);
   if (!eligible) return false;
   // Generic seniority alone is insufficient on mixed firm/portfolio boards.
