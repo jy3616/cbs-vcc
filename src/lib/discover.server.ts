@@ -46,6 +46,9 @@ function fc(path: string, body: unknown) {
   });
 }
 
+/** Same firm + same title = same role, even when found on a different job site. */
+export const roleKey = (firm: string, title: string) => `${firm}|${title}`.toLowerCase().replace(/[^a-z0-9|]+/g, "");
+
 class Halt extends Error {}
 
 export async function runDiscovery() {
@@ -65,8 +68,9 @@ export async function runDiscovery() {
   const added: string[] = [];
   let pause = "";
   try {
-    const { data: existing } = await db.from("postings").select("url");
+    const { data: existing } = await db.from("postings").select("url, firm, title");
     const known = new Set((existing ?? []).map((r) => r.url));
+    const seenRoles = new Set((existing ?? []).map((r) => roleKey(r.firm, r.title)));
 
     const candidates: { url: string; title: string }[] = [];
     for (const query of QUERIES) {
@@ -113,7 +117,7 @@ export async function runDiscovery() {
         if (s === 429) break;
         continue;
       }
-      if (!acceptExtraction(e, today)) continue;
+      if (!acceptExtraction(e, today) || seenRoles.has(roleKey(e.firm, e.title))) continue;
       const link = await checkLink(c.url);
       if (link.flag) continue;
 
@@ -123,7 +127,7 @@ export async function runDiscovery() {
         nyc: e.nyc, mentions_mba: e.mentionsMba, expired: false, last_verified_at: new Date().toISOString(),
         needs_review: false, review_reason: "", last_checked_at: new Date().toISOString(),
       });
-      if (!error) { added.push(`${e.firm} — ${e.title}`); known.add(c.url); }
+      if (!error) { added.push(`${e.firm} — ${e.title}`); known.add(c.url); seenRoles.add(roleKey(e.firm, e.title)); }
     }
   } catch (err) {
     if (err instanceof Halt) pause = err.message; else throw err;
