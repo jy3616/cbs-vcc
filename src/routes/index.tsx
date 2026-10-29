@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { isNew, type Job } from "@/data/jobs";
 import { StatusLabel } from "@/components/StatusLabel";
-import { fmtDay, usePostings } from "@/lib/postings";
+import { fmtDay, postingsQuery, verificationQuery } from "@/lib/postings";
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
 import { isInactive, postingStatus, sortByStatus, todayET } from "@/lib/status";
 import { BrandLockup } from "@/components/BrandLockup";
 import { fitLabelFor, jobSlug } from "@/lib/fit";
@@ -11,6 +13,11 @@ import { useBookmarks } from "@/lib/bookmarks";
 import { BoardNav } from "@/components/BoardNav";
 
 export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    await Promise.all([context.queryClient.ensureQueryData(postingsQuery), context.queryClient.ensureQueryData(verificationQuery)]);
+  },
+  pendingComponent: () => <p className="mx-auto max-w-4xl px-4 py-14 text-muted-foreground">Loading job postings…</p>,
+  errorComponent: ({ reset }) => <div className="mx-auto max-w-4xl space-y-4 px-4 py-14"><h1 className="text-2xl font-semibold">Postings could not be loaded</h1><p className="text-muted-foreground">The board is temporarily unavailable. Please try again.</p><Button onClick={reset}>Try again</Button></div>,
   head: () => ({
     meta: [
       { title: "CBS Venture Capital Club Job Board" },
@@ -100,14 +107,14 @@ function Board() {
   const [sector, setSector] = useState("");
   const [sort, setSort] = useState<"deadline" | "new" | "old">("deadline");
   const [hideExpired, setHideExpired] = useState(true);
-  const { data: JOBS = [] } = usePostings();
+  const { data: JOBS } = useSuspenseQuery(postingsQuery);
+  const { data: lastVerified } = useSuspenseQuery(verificationQuery);
   const { map: analyses } = useAnalyses();
   const { map: bookmarks, toggle: toggleBookmark } = useBookmarks();
   const today = todayET();
 
   const now = new Date();
   const fresh = JOBS.filter((j) => isNew(j, now) && !isInactive(postingStatus(j, today)));
-  const lastVerified = JOBS.reduce((m, j) => (j.lastVerified > m ? j.lastVerified : m), "");
   const openCount = JOBS.filter((j) => !isInactive(postingStatus(j, today))).length;
 
   const list = useMemo(() => {
