@@ -24,18 +24,18 @@ const str = (v: unknown) => typeof v === 'string' ? v : '';
 
 export function parseAts(source: Source, payload: unknown): SourceJob[] {
   const root = z.record(z.string(), z.unknown()).safeParse(payload);
-  const rows = arr.parse(source.ats_type === 'Lever' ? payload : root.success ? root.data.jobs : undefined);
+  const rows = arr.parse(source.ats_type === 'Lever' ? payload : root.success ? root.data['jobs'] : undefined);
   const output: SourceJob[] = [];
   for (const r of rows) {
-    const title = str(r.title ?? r.text);
-    const departments = Array.isArray(r.departments) ? r.departments.map(d => str((d as { name?: unknown }).name)).join(' ') : str(r.department);
-    const categories = r.categories as { team?: string; location?: string } | undefined;
+    const title = str(r['title'] ?? r['text']);
+    const departments = Array.isArray(r['departments']) ? r['departments'].map(d => str((d as { name?: unknown }).name)).join(' ') : str(r['department']);
+    const categories = r['categories'] as { team?: string; location?: string } | undefined;
     if (!investmentRole(title, departments || categories?.team || '')) continue;
-    const url = str(r.absolute_url ?? r.hostedUrl ?? r.jobUrl);
+    const url = str(r['absolute_url'] ?? r['hostedUrl'] ?? r['jobUrl']);
     if (!url.startsWith('https://') || isLinkedIn(url)) continue;
-    const loc = typeof r.location === 'object' && r.location ? str((r.location as { name?: unknown }).name) : str(r.location) || categories?.location || '';
-    const secondary = Array.isArray(r.secondaryLocations) ? r.secondaryLocations.map(l => str((l as { location?: unknown }).location)).filter(Boolean) : [];
-    output.push(job(String(r.id ?? url), title, url, [loc, ...secondary].filter(Boolean).join(' / '), text(str(r.content ?? r.descriptionHtml ?? r.description))));
+    const loc = typeof r['location'] === 'object' && r['location'] ? str((r['location'] as { name?: unknown }).name) : str(r['location']) || categories?.location || '';
+    const secondary = Array.isArray(r['secondaryLocations']) ? r['secondaryLocations'].map(l => str((l as { location?: unknown }).location)).filter(Boolean) : [];
+    output.push(job(String(r['id'] ?? url), title, url, [loc, ...secondary].filter(Boolean).join(' / '), text(str(r['content'] ?? r['descriptionHtml'] ?? r['description']))));
   }
   return output;
 }
@@ -51,11 +51,11 @@ export function parseHtml(source: Source, html: string): SourceJob[] {
       const list = Array.isArray(parsed) ? parsed : parsed['@graph'] ?? [parsed];
       for (const r of list) if (r['@type'] === 'JobPosting') {
         structured = true;
-        const title = str(r.title);
+        const title = str(r['title']);
         if (!investmentRole(title, str(r.occupationalCategory))) continue;
         const url = new URL(str(r.url) || source.careers_url, source.careers_url).href;
         if (url === source.careers_url || isLinkedIn(url)) continue;
-        output.push(job(url, title, url, str(r.jobLocation?.address?.addressLocality), text(str(r.description))));
+        output.push(job(url, title, url, str(r.jobLocation?.address?.addressLocality), text(str(r['description']))));
       }
     } catch { /* A malformed unrelated JSON-LD block is not a jobs list. */ }
   });
