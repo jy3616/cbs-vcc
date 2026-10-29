@@ -14,6 +14,7 @@ import { Route as BookmarksRouteImport } from './routes/bookmarks'
 import { Route as MyResumeRouteImport } from './routes/my-resume'
 import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
 import { Route as ApiPublicHooksCheckLinksRouteImport } from './routes/api/public/hooks/check-links'
+import { Route as ApiPublicJobsDiscoverRouteImport } from './routes/api/public/jobs/discover'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,6 +42,11 @@ const ApiPublicHooksCheckLinksRoute =
     path: '/api/public/hooks/check-links',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicJobsDiscoverRoute = ApiPublicJobsDiscoverRouteImport.update({
+  id: '/api/public/jobs/discover',
+  path: '/api/public/jobs/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -48,6 +54,7 @@ export interface FileRoutesByFullPath {
   '/my-resume': typeof MyResumeRoute
   '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
+  '/api/public/jobs/discover': typeof ApiPublicJobsDiscoverRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -55,6 +62,7 @@ export interface FileRoutesByTo {
   '/my-resume': typeof MyResumeRoute
   '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
+  '/api/public/jobs/discover': typeof ApiPublicJobsDiscoverRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -63,6 +71,7 @@ export interface FileRoutesById {
   '/my-resume': typeof MyResumeRoute
   '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
+  '/api/public/jobs/discover': typeof ApiPublicJobsDiscoverRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -72,6 +81,7 @@ export interface FileRouteTypes {
     | '/my-resume'
     | '/jobs/$slug'
     | '/api/public/hooks/check-links'
+    | '/api/public/jobs/discover'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -79,6 +89,7 @@ export interface FileRouteTypes {
     | '/my-resume'
     | '/jobs/$slug'
     | '/api/public/hooks/check-links'
+    | '/api/public/jobs/discover'
   id:
     | '__root__'
     | '/'
@@ -86,6 +97,7 @@ export interface FileRouteTypes {
     | '/my-resume'
     | '/jobs/$slug'
     | '/api/public/hooks/check-links'
+    | '/api/public/jobs/discover'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,6 +106,7 @@ export interface RootRouteChildren {
   MyResumeRoute: typeof MyResumeRoute
   JobsSlugRoute: typeof JobsSlugRoute
   ApiPublicHooksCheckLinksRoute: typeof ApiPublicHooksCheckLinksRoute
+  ApiPublicJobsDiscoverRoute: typeof ApiPublicJobsDiscoverRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -133,6 +146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksCheckLinksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/jobs/discover': {
+      id: '/api/public/jobs/discover'
+      path: '/api/public/jobs/discover'
+      fullPath: '/api/public/jobs/discover'
+      preLoaderRoute: typeof ApiPublicJobsDiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -142,6 +162,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyResumeRoute: MyResumeRoute,
   JobsSlugRoute: JobsSlugRoute,
   ApiPublicHooksCheckLinksRoute: ApiPublicHooksCheckLinksRoute,
+  ApiPublicJobsDiscoverRoute: ApiPublicJobsDiscoverRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
