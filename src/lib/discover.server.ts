@@ -46,6 +46,9 @@ function fc(path: string, body: unknown) {
   });
 }
 
+/** Same firm + same title = same role, even when found on a different job site. */
+export const roleKey = (firm: string, title: string) => `${firm}|${title}`.toLowerCase().replace(/[^a-z0-9|]+/g, "");
+
 class Halt extends Error {}
 
 export async function runDiscovery() {
@@ -65,13 +68,14 @@ export async function runDiscovery() {
   const added: string[] = [];
   let pause = "";
   try {
-    const { data: existing } = await db.from("postings").select("url");
+    const { data: existing } = await db.from("postings").select("url, firm, title");
     const known = new Set((existing ?? []).map((r) => r.url));
+    const seenRoles = new Set((existing ?? []).map((r) => roleKey(r.firm, r.title)));
 
     const candidates: { url: string; title: string }[] = [];
     for (const query of QUERIES) {
       const res = await fc("/search", { query, limit: 8, tbs: "qdr:w" });
-      if (res.status === 402 || res.status === 403) throw new Halt(`web search unavailable (${res.status})`);
+      if (res.status === 402 || (res.status === 403 && /credit limit/i.test(await res.clone().text()))) throw new Halt(`web search unavailable (${res.status})`);
       if (!res.ok) continue;
       const json = (await res.json()) as { data?: { web?: { url: string; title?: string }[] } | { url: string; title?: string }[] };
       const items = Array.isArray(json.data) ? json.data : json.data?.web ?? [];
@@ -87,7 +91,8 @@ export async function runDiscovery() {
 
     for (const c of candidates.slice(0, MAX_CANDIDATES)) {
       const page = await fc("/scrape", { url: c.url, formats: ["markdown"], onlyMainContent: true });
-      if (page.status === 402 || page.status === 403) throw new Halt(`web reading unavailable (${page.status})`);
+      if (page.status === 402) throw new Halt("web reading credits used up (402)");
+      if (page.status === 403 && /credit limit/i.test(await page.clone().text())) throw new Halt("web reading credit limit reached");
       if (!page.ok) continue;
       const pj = (await page.json()) as { data?: { markdown?: string; metadata?: { statusCode?: number } } };
       const md = pj.data?.markdown ?? "";
@@ -112,7 +117,7 @@ export async function runDiscovery() {
         if (s === 429) break;
         continue;
       }
-      if (!acceptExtraction(e, today)) continue;
+      if (!acceptExtraction(e, today) || seenRoles.has(roleKey(e.firm, e.title))) continue;
       const link = await checkLink(c.url);
       if (link.flag) continue;
 
@@ -122,7 +127,7 @@ export async function runDiscovery() {
         nyc: e.nyc, mentions_mba: e.mentionsMba, expired: false, last_verified_at: new Date().toISOString(),
         needs_review: false, review_reason: "", last_checked_at: new Date().toISOString(),
       });
-      if (!error) { added.push(`${e.firm} — ${e.title}`); known.add(c.url); }
+      if (!error) { added.push(`${e.firm} — ${e.title}`); known.add(c.url); seenRoles.add(roleKey(e.firm, e.title)); }
     }
   } catch (err) {
     if (err instanceof Halt) pause = err.message; else throw err;
