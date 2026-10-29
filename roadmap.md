@@ -23,7 +23,12 @@
 - Scraped Indeed/Glassdoor/other job sites for VC postings: added 6 verified roles (HOF Capital Analyst, Associate, Fall 2026 Intern; J2 Ventures Associate; Intermountain Ventures Analyst; Impression Ventures Analyst) — board now 20 postings
 
 ## Open
-- Diagnose empty board and correct loading/error and verification displays
-- Add source registry (30 verified firms) and scrape run history
-- Replace search discovery with source-based ATS/HTML checks, deduplication and confirmed expiration
-- Schedule checks around 6am ET and run once now; verify visible results and source outcomes
+- Publish the updated daily checks (awaiting user publishing request)
+
+## Source scraper completed
+- Diagnosed misleading zero/dash loading fallback; public server reads and explicit loading/error states now protect homepage totals
+- Added 30 confirmed careers sources, uncertainty flags, and aggregate scrape_runs with per-source outcomes
+- Added Greenhouse, Lever, Ashby and conservative HTML adapters; investment-only filtering, firm/title deduplication, source-absence expiration, and LinkedIn exclusion
+- Configured independent managed source callbacks around 6am ET with daylight-saving guard (29 active sources; Pear inactive pending mixed-board review)
+- Ran today: 29 sources checked, 23 succeeded, 6 HTML lists failed safely; 18 added, 1 updated, 0 expired; board has 47 open postings
+- Verified homepage, unauthorized callback rejection, replay prevention, all 57 tests, and clean build
