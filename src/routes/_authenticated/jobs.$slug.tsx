@@ -9,7 +9,7 @@ import { jobSlug, type FitResult } from "@/lib/fit";
 import { analyzeFit } from "@/lib/fit.functions";
 import { useAnalyses, useResume } from "@/lib/resume-store";
 
-export const Route = createFileRoute("/jobs/$slug")({
+export const Route = createFileRoute("/_authenticated/jobs/$slug")({
   head: () => {
     const t = "Job posting";
     return {

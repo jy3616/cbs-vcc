@@ -12,7 +12,7 @@ import { useAnalyses } from "@/lib/resume-store";
 import { useBookmarks } from "@/lib/bookmarks";
 import { BoardNav } from "@/components/BoardNav";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   loader: async ({ context }) => {
     await Promise.all([context.queryClient.ensureQueryData(postingsQuery), context.queryClient.ensureQueryData(verificationQuery)]);
   },

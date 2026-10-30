@@ -9,7 +9,7 @@ import { fitLabelFor, jobSlug } from "@/lib/fit";
 import { useAnalyses } from "@/lib/resume-store";
 import { useBookmarks } from "@/lib/bookmarks";
 
-export const Route = createFileRoute("/bookmarks")({
+export const Route = createFileRoute("/_authenticated/bookmarks")({
   head: () => ({
     meta: [
       { title: "Bookmarks · CBS Venture Capital Club Job Board" },

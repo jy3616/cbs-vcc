@@ -6,7 +6,7 @@ import { BoardNav } from "@/components/BoardNav";
 import { extractResumeText } from "@/lib/resume-file";
 import { useResume } from "@/lib/resume-store";
 
-export const Route = createFileRoute("/my-resume")({
+export const Route = createFileRoute("/_authenticated/my-resume")({
   head: () => ({
     meta: [
       { title: "My resume · CBS Venture Capital Club Job Board" },
