@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import {supabase} from "@/integrations/supabase/client";
+import {useStudent} from "./auth";
+import {usePreferences} from "./account";
+import {toast} from "sonner";
 import type { FitResult } from "./fit";
 
 /**
- * Browser-only storage for the resume and fit results. No accounts on this
- * site, so everything lives in the visitor's own localStorage and never
- * touches the server.
+ * Default browser resume storage, with explicit account opt-in. Fit narratives
+ * remain browser-cached; submitted resume text is never persisted by checks.
  */
 const RESUME_KEY = "vcc-resume";
 const ANALYSES_KEY = "vcc-fit-analyses";
@@ -45,27 +48,19 @@ export function saveAnalysis(jobUrl: string, result: FitResult) {
 
 /** Resume text, loaded after hydration to avoid SSR mismatches. */
 export function useResume() {
-  const [text, setText] = useState("");
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    setText(loadResume());
-    setReady(true);
-  }, []);
-  const save = (t: string) => {
-    setText(t);
-    if (t) saveResume(t);
-    else clearResume();
-  };
-  return { text, ready, save };
+  const {user}=useStudent();const prefs=usePreferences();
+  const [text,setText]=useState("");const [ready,setReady]=useState(false);
+  const account=prefs.data?.resume_account??false;
+  useEffect(()=>{let active=true;if(!user||prefs.isPending)return;setReady(false);if(account){void supabase.from('resumes').select('content').eq('user_id',user.id).maybeSingle().then(({data,error})=>{if(active){if(error)toast.error('Could not load account resume.');setText(data?.content??'');setReady(true);}});}else{setText(loadResume());setReady(true);}return()=>{active=false;};},[user,account,prefs.isPending]);
+  const save=async(t:string)=>{if(account&&user){const {error}=t?await supabase.from('resumes').upsert({user_id:user.id,content:t,updated_at:new Date().toISOString()}):await supabase.from('resumes').delete().eq('user_id',user.id);if(error){toast.error('Could not save account resume');throw error;}}else{if(t)saveResume(t);else clearResume();}setText(t);localStorage.removeItem(ANALYSES_KEY);window.dispatchEvent(new Event('vcc-fit-changed'));};
+  const setAccount=async(enabled:boolean)=>{if(!user)return;if(enabled){const {error}=await supabase.from('resumes').upsert({user_id:user.id,content:text,updated_at:new Date().toISOString()});if(error)throw error;await prefs.save({resume_account:true});localStorage.removeItem(RESUME_KEY);}else{const {error}=await supabase.from('resumes').delete().eq('user_id',user.id);if(error)throw error;saveResume(text);await prefs.save({resume_account:false});}};
+  return {text,ready,save,account,setAccount};
 }
 
-/** Fit results keyed by job URL, loaded after hydration. */
 export function useAnalyses() {
-  const [map, setMap] = useState<Record<string, StoredAnalysis>>({});
-  useEffect(() => setMap(loadAnalyses()), []);
-  const save = (jobUrl: string, result: FitResult) => {
-    saveAnalysis(jobUrl, result);
-    setMap(loadAnalyses());
-  };
-  return { map, save };
+ const {user}=useStudent();
+ const [map,setMap]=useState<Record<string,StoredAnalysis>>({});
+ useEffect(()=>{if(!user)return;const owner=localStorage.getItem('vcc-fit-owner');if(owner!==user.id){localStorage.removeItem(ANALYSES_KEY);localStorage.setItem('vcc-fit-owner',user.id);window.dispatchEvent(new Event('vcc-fit-changed'));}},[user]);
+ useEffect(()=>{const sync=()=>setMap(loadAnalyses());sync();window.addEventListener('vcc-fit-changed',sync);return()=>window.removeEventListener('vcc-fit-changed',sync);},[]);
+ const save=(url:string,result:FitResult)=>{saveAnalysis(url,result);window.dispatchEvent(new Event('vcc-fit-changed'));};return {map,save};
 }

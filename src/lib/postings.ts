@@ -7,6 +7,7 @@ type Row = Database["public"]["Tables"]["postings"]["Row"];
 
 export function rowToJob(r: Row): Job {
   return {
+    fundStage:r.fund_stage,mbaSpecific:r.mba_specific,alumni:r.alumni,notes:r.notes,sharedByVcc:r.shared_by_vcc,
     id: r.id, firm: r.firm, title: r.title, location: r.location, firmType: r.firm_type, focus: r.focus,
     sectors: r.sectors, roleType: r.role_type, datePosted: r.date_posted, deadline: r.deadline ?? "",
     rolling: r.rolling, url: r.url, nyc: r.nyc, mentionsMba: r.mentions_mba, expired: r.expired,

@@ -1,0 +1,3 @@
+import {APPLICATION_STATUSES,type ApplicationStatus} from '@/lib/student';
+import {useBookmarks} from '@/lib/bookmarks';
+export function ApplicationStatusControl({url}:{url:string}){const {rows,setStatus}=useBookmarks();const row=rows.find(r=>r.job_url===url);if(!row)return null;return <label className="flex items-center gap-2 text-xs text-muted-foreground">Application status<select aria-label="Application status" className="rounded-md border bg-card p-2 text-foreground" value={row.status} onChange={e=>setStatus(url,e.target.value as ApplicationStatus)}>{APPLICATION_STATUSES.map(s=><option key={s}>{s}</option>)}</select></label>;}

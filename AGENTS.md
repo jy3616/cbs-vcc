@@ -9,11 +9,14 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- The site is fully public with no accounts: `src/routes/index.tsx` is the job board; there is no sign-in or application tracking (removed at the user's request).
-- Resume Match is browser-only: resume text and fit results live in the visitor's localStorage (src/lib/resume-store.ts); the AI check runs in the public analyzeFit server function, which only fetches posting URLs that exist in the postings table and never stores the resume server-side.
-- Bookmarks are browser-only too: job-URL bookmarks live in the visitor's localStorage (src/lib/bookmarks.ts), never on the server. Every copy of the list (header count, card buttons, the /bookmarks page) stays in step through a sync event fired on each write, so no page needs a reload to show the current count.
-- Job postings live in the Cloud postings table with an anonymous read policy (src/data/jobs.ts only holds types); status (Open/Closing soon/Deadline passed/Expired) is computed from dates in src/lib/status.ts, never stored, so it stays correct daily.
+- Student content lives under the client-only `_authenticated` gate; database RLS and requireStudent independently verify the confirmed school mailbox, so routes are not the security boundary.
+- Resume storage is opt-in account storage or browser storage; fit checks use the zero-retention Gateway Responses surface without input logs, so transient submission never persists the resume.
+- Account bookmarks store snapshots and application status under owner-scoped RLS; React Query invalidation synchronizes all lists and one-time import preserves prior browser bookmarks.
+- Job postings live in the Cloud postings table with verified-student read policies (src/data/jobs.ts only holds types); status (Open/Closing soon/Deadline passed/Expired) is computed from dates in src/lib/status.ts, never stored, so it stays correct daily.
 - Hourly link checking skips excluded hosts, flags transient failures, and expires only confirmed 404s; source absence expires only after a successful complete source read. Why: blocked pages must never remove valid openings.
 - Daily source scraping uses independent authenticated managed callbacks per active source at the same morning window; each reads its public ATS API or parses HTML, then transactional RPCs claim and record the aggregate daily scrape_runs entry. Why: short scheduler callbacks cannot safely run a whole multi-source crawl, and database locking prevents duplicate writes.
-- Public board reads go through an anonymous publishable-key server function and a suspense loader; verification comes from completed scrape_runs with at least one successful source. Why: loading or connection failures must never masquerade as an empty board.
+- Board reads use requireStudent and the protected suspense loader; last-verification RPC exposes only the aggregate timestamp while detailed scrape errors remain admin-only.
 - Deadline-passed postings are deleted daily by a SQL-only pg_cron job. Why: the user wants them gone, not just labelled.
+
+- Admin roles are separate protected rows; email grants require an already signed-in verified student, and the designated owner is granted by the auth verification trigger rather than browser logic.
+- Avatars are private Storage objects under owner folders and render through short-lived signed URLs, so images never become anonymous public assets.

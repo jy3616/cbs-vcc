@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { BrandLockup } from "@/components/BrandLockup";
+import { PostingExtras } from "@/components/PostingExtras";
+import { postedDays } from "@/lib/student";
+import { Button } from "@/components/ui/button";
 import { BoardNav } from "@/components/BoardNav";
 import { StatusLabel } from "@/components/StatusLabel";
 import { fmtDay, usePostings } from "@/lib/postings";
@@ -9,7 +12,7 @@ import { fitLabelFor, jobSlug } from "@/lib/fit";
 import { useAnalyses } from "@/lib/resume-store";
 import { useBookmarks } from "@/lib/bookmarks";
 
-export const Route = createFileRoute("/bookmarks")({
+export const Route = createFileRoute("/_authenticated/bookmarks")({
   head: () => ({
     meta: [
       { title: "Bookmarks · CBS Venture Capital Club Job Board" },
@@ -57,9 +60,9 @@ function Bookmarks() {
         <h1 className="mt-2 text-2xl font-bold text-primary sm:text-4xl">Bookmarks</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           {saved.rows.length
-            ? `${saved.rows.length} posting${saved.rows.length === 1 ? "" : "s"} saved in this browser — newest first.`
+            ? `${saved.rows.length} posting${saved.rows.length === 1 ? "" : "s"} saved to your account — newest first.`
             : "You haven't bookmarked anything yet."}{" "}
-          Bookmarks live only in this browser, so they don't follow you to another device and are cleared with your browser data.
+          Bookmarks follow your student account across devices.
         </p>
       </header>
 
@@ -92,14 +95,14 @@ function Bookmarks() {
                       </h2>
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
-                      <button
+                      <Button variant="outline"
                         type="button"
                         onClick={() => toggleBookmark(j.url)}
                         title="Remove bookmark"
                         className="rounded-md border border-accent bg-highlight px-3 py-1.5 text-sm font-medium text-highlight-foreground"
                       >
                         ★ Bookmarked
-                      </button>
+                      </Button>
                       <Link
                         to="/jobs/$slug"
                         params={{ slug: jobSlug(j) }}
@@ -134,7 +137,7 @@ function Bookmarks() {
                         {j.location}
                       </div>
                     )}
-                    <div>Posted {fmtDate(j.datePosted)}</div>
+                    <div>Posted {postedDays(j.datePosted,todayET())} days ago</div>
                     <div className="font-medium text-foreground">
                       {j.rolling || !j.deadline ? "Rolling / no deadline" : `Deadline ${fmtDate(j.deadline)}`}
                     </div>
@@ -144,6 +147,7 @@ function Bookmarks() {
                       {new Date(at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </div>
                   </dl>
+                  <PostingExtras job={j}/>
                 </article>
               );
             })
@@ -163,7 +167,7 @@ function Bookmarks() {
         <section className="mt-10">
           <h2 className="text-lg font-semibold">Saved but no longer on the board</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            These links are still bookmarked in your browser, but the posting isn't on the board anymore.
+            These links are still bookmarked in your account, but the posting isn't on the board anymore.
           </p>
           <ul className="mt-3 space-y-2">
             {saved.gone.map((u) => (
@@ -171,13 +175,13 @@ function Bookmarks() {
                 <a href={u} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate text-primary hover:underline">
                   {u}
                 </a>
-                <button
+                <Button variant="outline"
                   type="button"
                   onClick={() => toggleBookmark(u)}
                   className="rounded-md border border-input px-3 py-1.5 font-medium text-muted-foreground hover:bg-secondary"
                 >
                   Remove
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

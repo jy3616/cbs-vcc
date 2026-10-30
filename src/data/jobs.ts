@@ -3,6 +3,11 @@ export type RoleType = "Full-time" | "Summer internship" | "In-semester internsh
 export type FirmType = "VC" | "Growth equity" | "CVC" | "Studio" | "Accelerator";
 
 export interface Job {
+  fundStage?: string;
+  mbaSpecific?: boolean;
+  alumni?: string;
+  notes?: string;
+  sharedByVcc?: boolean;
   id: string;
   firm: string;
   title: string;

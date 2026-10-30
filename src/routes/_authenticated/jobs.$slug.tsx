@@ -2,6 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { BrandLockup } from "@/components/BrandLockup";
+import { PostingExtras } from "@/components/PostingExtras";
+import { postedDays } from "@/lib/student";
+import { todayET } from "@/lib/status";
+import { Button } from "@/components/ui/button";
 import { BoardNav } from "@/components/BoardNav";
 import { usePostings } from "@/lib/postings";
 import { StatusLabel } from "@/components/StatusLabel";
@@ -9,7 +13,7 @@ import { jobSlug, type FitResult } from "@/lib/fit";
 import { analyzeFit } from "@/lib/fit.functions";
 import { useAnalyses, useResume } from "@/lib/resume-store";
 
-export const Route = createFileRoute("/jobs/$slug")({
+export const Route = createFileRoute("/_authenticated/jobs/$slug")({
   head: () => {
     const t = "Job posting";
     return {
@@ -83,25 +87,27 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
           ))}
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          Posted {fmt(job.datePosted)} · {job.rolling || !job.deadline ? "Rolling / no deadline" : `Deadline ${fmt(job.deadline)}`} · Last verified {new Date(job.lastVerified).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          Posted {postedDays(job.datePosted,todayET())} days ago · {job.rolling || !job.deadline ? "Rolling / no deadline" : `Deadline ${fmt(job.deadline)}`} · Last verified {new Date(job.lastVerified).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
         </p>
         <a href={job.url} target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
           View full posting & apply ↗
         </a>
+      <PostingExtras job={job}/>
       </article>
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-2xl font-semibold">Resume Match</h2>
           {hasResume && (
-            <button onClick={check} disabled={running}
+            <Button onClick={check} disabled={running}
               className="ml-auto rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
               {running ? "Analyzing…" : saved ? "Regenerate" : "Check My Fit"}
-            </button>
+            </Button>
           )}
         </div>
 
+        <p className="mt-2 text-xs text-muted-foreground">Your resume text is sent to an AI service for this check and is not stored afterward; only your chosen resume storage and cached results remain.</p>
         {ready && !hasResume && (
           <p className="mt-4 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
             Add your resume first to check your fit.{" "}
@@ -155,7 +161,7 @@ function Results({ r, at }: { r: FitResult; at: string }) {
           <li key={g.gap}><p className="font-medium">{g.gap}</p><p className="text-muted-foreground">→ {g.suggestion}</p></li>
         ))}</ul>
       </Block>
-      <Block title="Resume tips"><ul className="list-disc space-y-1 pl-5">{r.resumeTips.map((s) => <li key={s}>{s}</li>)}</ul></Block>
+      <Block title="Suggested resume bullets"><ul className="list-disc space-y-1 pl-5">{r.resumeTips.map((s) => <li key={s}>{s}</li>)}</ul></Block>
       <h2 className="pt-2 text-2xl font-semibold">Interview Prep</h2>
       <Block title="Behavioral questions"><QA items={r.behavioralQuestions} /></Block>
       <Block title="Technical & VC questions"><QA items={r.technicalQuestions} /></Block>

@@ -19,9 +19,9 @@ export type Requirement = z.infer<typeof matrixSchema>["requirements"][number];
 /** Pass 2: narrative written from the verified matrix. */
 const qa = z.object({ question: z.string(), tip: z.string() });
 export const narrativeSchema = z.object({
-  strengths: z.array(z.string()),
+  strengths: z.array(z.string()).length(3),
   gaps: z.array(z.object({ gap: z.string(), suggestion: z.string() })),
-  resumeTips: z.array(z.string()),
+  resumeTips: z.array(z.string()).min(2).max(3),
   behavioralQuestions: z.array(qa),
   technicalQuestions: z.array(qa),
 });

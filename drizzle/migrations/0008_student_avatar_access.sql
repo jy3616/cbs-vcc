@@ -1,0 +1,1 @@
+CREATE POLICY student_avatar_own ON storage.objects FOR ALL TO authenticated USING(bucket_id='student-avatars' AND (storage.foldername(name))[1]=auth.uid()::text AND public.is_cbs_student()) WITH CHECK(bucket_id='student-avatars' AND (storage.foldername(name))[1]=auth.uid()::text AND public.is_cbs_student());
