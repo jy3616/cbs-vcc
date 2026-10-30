@@ -57,6 +57,13 @@
       "when": 1793321257502,
       "tag": "0007_student_accounts_and_admin_tools",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793321404344,
+      "tag": "0008_student_avatar_access",
+      "breakpoints": true
     }
   ]
 }
