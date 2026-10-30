@@ -21,3 +21,4 @@
 - Admin roles are separate protected rows; email grants require an already signed-in verified student, and the designated owner is granted by the auth verification trigger rather than browser logic.
 - Every auth lifecycle profile insert uses ON CONFLICT (id) DO NOTHING; multiple signup triggers must coexist without duplicate-key failures or overwriting student profile edits.
 - Avatars are private Storage objects under owner folders and render through short-lived signed URLs, so images never become anonymous public assets.
+- Board pagination slices the filtered, sorted list on the client and resets on filter or sort changes; this preserves global counts and fit ranking across pages.
