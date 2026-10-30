@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { isNew, type Job } from "@/data/jobs";
 import { StatusLabel } from "@/components/StatusLabel";
 import { fmtDay, postingsQuery, verificationQuery } from "@/lib/postings";
@@ -119,6 +120,8 @@ function Board() {
   const {text:resume}=useResume();const prefs=usePreferences();const run=useServerFn(analyzeFit);
   const [sort, setSort] = useState<"deadline" | "new" | "old" | "fit">("deadline");
   const [hideExpired, setHideExpired] = useState(true);
+  const [page, setPage] = useState(1);
+  const postingsSection = useRef<HTMLElement>(null);
   const { data: JOBS } = useSuspenseQuery(postingsQuery);
   const { data: lastVerified } = useSuspenseQuery(verificationQuery);
   const { map: analyses,save:saveAnalysis } = useAnalyses();
@@ -147,6 +150,18 @@ function Board() {
     return [...byDate.filter((j) => !isInactive(postingStatus(j, today))), ...byDate.filter((j) => isInactive(postingStatus(j, today)))];
   }, [JOBS, q, role, loc, firm, sector, stage,mba,analyses,sort, hideExpired, today]);
 
+  const pageSize = 10;
+  const pageCount = Math.max(1, Math.ceil(list.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pageStart = (currentPage - 1) * pageSize;
+  const visiblePostings = list.slice(pageStart, pageStart + pageSize);
+  useEffect(() => { setPage(1); }, [q, role, loc, firm, sector, stage, mba, sort, hideExpired]);
+  useEffect(() => { setPage((previous) => Math.min(previous, pageCount)); }, [pageCount]);
+  function changePage(nextPage: number) {
+    setPage(nextPage);
+    postingsSection.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
       <header className="border-b pb-6">
@@ -167,7 +182,7 @@ function Board() {
         </div>
       </section>
 
-      <section className="mt-12">
+      <section ref={postingsSection} className="mt-12 scroll-mt-6">
         <h2 className="text-2xl font-semibold">All postings</h2>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-6">
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search firm, title, sector…"
@@ -196,9 +211,17 @@ function Board() {
         </label>
 
         <div className="mt-4 space-y-3">
-          {list.length ? list.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :
+          {list.length ? visiblePostings.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
         </div>
+        {list.length > 0 && <div className="mt-6 space-y-3 border-t pt-5">
+          <p role="status" className="text-center text-sm text-muted-foreground">Showing {pageStart + 1}–{Math.min(pageStart + pageSize, list.length)} of {list.length} postings</p>
+          {pageCount > 1 && <nav aria-label="Job postings pages" className="flex flex-wrap items-center justify-center gap-2">
+            <Button variant="outline" size="icon" aria-label="Previous page" title="Previous page" disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)}><ChevronLeft /></Button>
+            {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => <Button key={number} size="icon" variant={number === currentPage ? "default" : "outline"} aria-label={`Page ${number}`} aria-current={number === currentPage ? "page" : undefined} onClick={() => changePage(number)}>{number}</Button>)}
+            <Button variant="outline" size="icon" aria-label="Next page" title="Next page" disabled={currentPage === pageCount} onClick={() => changePage(currentPage + 1)}><ChevronRight /></Button>
+          </nav>}
+        </div>}
       </section>
 
       <footer className="mt-14 border-t pt-6 text-sm text-muted-foreground">
