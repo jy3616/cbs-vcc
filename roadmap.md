@@ -28,6 +28,7 @@
 - Signed-in student/admin end-to-end and board mobile verification: blocked on first verified CBS student sign-in (existing accounts are outside the allowed domain)
 
 ## Student features implemented
+- Fixed conflicting signup profile triggers; verified the published magic-link request returns success and creates exactly one profile.
 - Verified school-email magic-link access, profile name/private avatar, protected content, owner-scoped bookmarks and application states
 - Account resume opt-in, default browser storage, zero-retention AI fit checks, three strengths and tailored resume bullets, cached best-fit sorting
 - Admin posting/source/run/report/role tools, fund-stage and MBA filters, posting age, saved filters and digest preference
