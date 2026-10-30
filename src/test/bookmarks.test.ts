@@ -1,34 +1,9 @@
-import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
-
-import { useBookmarks } from "@/lib/bookmarks";
-
-const URL_A = "https://example.com/associate";
-
-describe("Browser bookmarks", () => {
-  beforeEach(() => localStorage.clear());
-
-  it("adds then removes a posting", () => {
-    const { result } = renderHook(() => useBookmarks());
-
-    act(() => result.current.toggle(URL_A));
-    expect(typeof result.current.map[URL_A]).toBe("string");
-
-    act(() => result.current.toggle(URL_A));
-    expect(result.current.map[URL_A]).toBeUndefined();
-  });
-
-  it("keeps every open copy of the list in step without a reload", () => {
-    // The header count and the card button are two separate copies of the list.
-    const header = renderHook(() => useBookmarks());
-    const card = renderHook(() => useBookmarks());
-
-    act(() => header.result.current.toggle(URL_A));
-
-    expect(card.result.current.map[URL_A]).toBeTypeOf("string");
-
-    act(() => card.result.current.toggle(URL_A));
-
-    expect(header.result.current.map[URL_A]).toBeUndefined();
-  });
-});
+import {act,renderHook,waitFor} from '@testing-library/react';
+import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+import {vi,describe,it,expect,beforeEach} from 'vitest';
+import {createElement,type ReactNode} from 'react';
+const state=vi.hoisted(()=>({rows:[] as {job_url:string;saved_at:string;status:string}[]}));
+vi.mock('@/lib/auth',()=>({useStudent:()=>({user:{id:'student-a'}})}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{from:(table:string)=>{const chain={select:()=>chain,eq:()=>chain,order:async()=>({data:state.rows,error:null}),maybeSingle:async()=>({data:{firm:'Verified firm',title:'Associate'},error:null}),insert:async(row:{job_url:string})=>{state.rows.push({...row,saved_at:'2026-10-30',status:'Interested'});return {error:null};},delete:()=>({eq:()=>({eq:async(_:string,url:string)=>{state.rows=state.rows.filter(r=>r.job_url!==url);return {error:null};}})}),update:(patch:{status:string})=>({eq:()=>({eq:async(_:string,url:string)=>{state.rows=state.rows.map(r=>r.job_url===url?{...r,...patch}:r);return {error:null};}})})};return chain;}}}));
+import {useBookmarks} from '@/lib/bookmarks';
+describe('account bookmarks',()=>{beforeEach(()=>{state.rows=[];localStorage.clear();});it('saves to the account and synchronizes every open list',async()=>{const qc=new QueryClient({defaultOptions:{queries:{retry:false}}});const wrapper=({children}:{children:ReactNode})=>createElement(QueryClientProvider,{client:qc},children);const header=renderHook(()=>useBookmarks(),{wrapper});const card=renderHook(()=>useBookmarks(),{wrapper});await act(async()=>{await new Promise(r=>setTimeout(r,20));});act(()=>card.result.current.toggle('https://verified.example/associate'));await waitFor(()=>expect(header.result.current.map['https://verified.example/associate']).toBe('2026-10-30'));expect(localStorage.getItem('vcc-bookmarks')).toBeNull();act(()=>header.result.current.setStatus('https://verified.example/associate','Applied'));await waitFor(()=>expect(card.result.current.rows[0]?.status).toBe('Applied'));act(()=>card.result.current.toggle('https://verified.example/associate'));await waitFor(()=>expect(header.result.current.map['https://verified.example/associate']).toBeUndefined());});});
