@@ -24,6 +24,12 @@
 
 ## Open
 - Publish the updated daily checks (awaiting user publishing request)
+- Add verified student-only passwordless sign-in, profiles, and admin authorization
+- Move bookmarks to accounts and add grouped application tracking
+- Add optional account resumes, evidence-based cached fit results and best-fit ranking
+- Add admin posting/source/run tools, fund-stage and MBA filters, link reports and posting age
+- Add saved filter and weekly digest preferences; sending waits for chosen email service
+- Verify student and admin flows and mobile layouts
 
 ## Source scraper completed
 - Diagnosed misleading zero/dash loading fallback; public server reads and explicit loading/error states now protect homepage totals
