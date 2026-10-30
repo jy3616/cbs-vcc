@@ -24,12 +24,15 @@
 
 ## Open
 - Publish the updated daily checks (awaiting user publishing request)
-- Add verified student-only passwordless sign-in, profiles, and admin authorization
-- Move bookmarks to accounts and add grouped application tracking
-- Add optional account resumes, evidence-based cached fit results and best-fit ranking
-- Add admin posting/source/run tools, fund-stage and MBA filters, link reports and posting age
-- Add saved filter and weekly digest preferences; sending waits for chosen email service
-- Verify student and admin flows and mobile layouts
+- Weekly digest sending: blocked on the user choosing a dedicated email service
+- Signed-in student/admin end-to-end and board mobile verification: blocked on first verified CBS student sign-in (existing accounts are outside the allowed domain)
+
+## Student features implemented
+- Verified school-email magic-link access, profile name/private avatar, protected content, owner-scoped bookmarks and application states
+- Account resume opt-in, default browser storage, zero-retention AI fit checks, three strengths and tailored resume bullets, cached best-fit sorting
+- Admin posting/source/run/report/role tools, fund-stage and MBA filters, posting age, saved filters and digest preference
+- All 62 tests pass; signed-out routes and existing non-CBS account rejected; sign-in layout checked at desktop and mobile widths
+- Designated owner admin role is assigned on their first verified CBS sign-in
 
 ## Source scraper completed
 - Diagnosed misleading zero/dash loading fallback; public server reads and explicit loading/error states now protect homepage totals
