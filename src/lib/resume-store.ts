@@ -6,9 +6,8 @@ import {toast} from "sonner";
 import type { FitResult } from "./fit";
 
 /**
- * Browser-only storage for the resume and fit results. No accounts on this
- * site, so everything lives in the visitor's own localStorage and never
- * touches the server.
+ * Default browser resume storage, with explicit account opt-in. Fit narratives
+ * remain browser-cached; submitted resume text is never persisted by checks.
  */
 const RESUME_KEY = "vcc-resume";
 const ANALYSES_KEY = "vcc-fit-analyses";
@@ -59,7 +58,9 @@ export function useResume() {
 }
 
 export function useAnalyses() {
+ const {user}=useStudent();
  const [map,setMap]=useState<Record<string,StoredAnalysis>>({});
+ useEffect(()=>{if(!user)return;const owner=localStorage.getItem('vcc-fit-owner');if(owner!==user.id){localStorage.removeItem(ANALYSES_KEY);localStorage.setItem('vcc-fit-owner',user.id);window.dispatchEvent(new Event('vcc-fit-changed'));}},[user]);
  useEffect(()=>{const sync=()=>setMap(loadAnalyses());sync();window.addEventListener('vcc-fit-changed',sync);return()=>window.removeEventListener('vcc-fit-changed',sync);},[]);
  const save=(url:string,result:FitResult)=>{saveAnalysis(url,result);window.dispatchEvent(new Event('vcc-fit-changed'));};return {map,save};
 }
