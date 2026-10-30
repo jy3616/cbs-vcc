@@ -64,6 +64,13 @@
       "when": 1793321404344,
       "tag": "0008_student_avatar_access",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793322039311,
+      "tag": "0009_idempotent_signup_profile_creation",
+      "breakpoints": true
     }
   ]
 }
