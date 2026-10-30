@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { isNew, type Job } from "@/data/jobs";
 import { StatusLabel } from "@/components/StatusLabel";
 import { fmtDay, postingsQuery, verificationQuery } from "@/lib/postings";
@@ -10,6 +10,13 @@ import { BrandLockup } from "@/components/BrandLockup";
 import { fitLabelFor, jobSlug } from "@/lib/fit";
 import { useAnalyses } from "@/lib/resume-store";
 import { useBookmarks } from "@/lib/bookmarks";
+import { PostingExtras } from "@/components/PostingExtras";
+import { FUND_STAGES, postedDays } from "@/lib/student";
+import { useResume } from "@/lib/resume-store";
+import { usePreferences } from "@/lib/account";
+import { analyzeFit } from "@/lib/fit.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { BoardNav } from "@/components/BoardNav";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -53,11 +60,11 @@ function JobCard({ j, score, bookmarked, onToggleBookmark }: { j: Job; score?: n
           </h3>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onToggleBookmark} aria-pressed={bookmarked}
+          <Button variant="outline" type="button" onClick={onToggleBookmark} aria-pressed={bookmarked}
             title={bookmarked ? "Remove bookmark" : "Bookmark this posting"}
             className={`rounded-md border px-3 py-1.5 text-sm font-medium ${bookmarked ? "border-accent bg-highlight text-highlight-foreground" : "border-input text-muted-foreground hover:bg-secondary"}`}>
             {bookmarked ? "★ Bookmarked" : "☆ Bookmark"}
-          </button>
+          </Button>
           <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }}
             className="rounded-md border border-primary px-3 py-1.5 text-sm font-medium text-primary hover:bg-secondary">
             Check My Fit
@@ -78,10 +85,11 @@ function JobCard({ j, score, bookmarked, onToggleBookmark }: { j: Job; score?: n
       </div>
       <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
         {j.location && <div><dt className="sr-only">Location</dt>{j.location}</div>}
-        <div>Posted {fmtDate(j.datePosted)}</div>
+        <div>Posted {postedDays(j.datePosted,todayET())} days ago</div>
         <div className="font-medium text-foreground">{j.rolling || !j.deadline ? "Rolling / no deadline" : `Deadline ${fmtDate(j.deadline)}`}</div>
         <div>Last verified {fmtDay(j.lastVerified)}</div>
       </dl>
+      <PostingExtras job={j}/>
     </article>
   );
 }
@@ -105,14 +113,21 @@ function Board() {
   const [loc, setLoc] = useState("");
   const [firm, setFirm] = useState("");
   const [sector, setSector] = useState("");
-  const [sort, setSort] = useState<"deadline" | "new" | "old">("deadline");
+  const [stage,setStage]=useState("");
+  const [mba,setMba]=useState("");
+  const [ranking,setRanking]=useState(false);const [rankError,setRankError]=useState("");
+  const {text:resume}=useResume();const prefs=usePreferences();const run=useServerFn(analyzeFit);
+  const [sort, setSort] = useState<"deadline" | "new" | "old" | "fit">("deadline");
   const [hideExpired, setHideExpired] = useState(true);
   const { data: JOBS } = useSuspenseQuery(postingsQuery);
   const { data: lastVerified } = useSuspenseQuery(verificationQuery);
-  const { map: analyses } = useAnalyses();
+  const { map: analyses,save:saveAnalysis } = useAnalyses();
   const { map: bookmarks, toggle: toggleBookmark } = useBookmarks();
   const today = todayET();
 
+  const [loadedFilters,setLoadedFilters]=useState(false);
+  useEffect(()=>{if(loadedFilters||!prefs.data)return;const f=prefs.data.filters;if(f&&typeof f==="object"&&!Array.isArray(f)){setRole(String(f["role"]??""));setLoc(String(f["loc"]??""));setFirm(String(f["firm"]??""));setSector(String(f["sector"]??""));setStage(String(f["stage"]??""));setMba(String(f["mba"]??""));}setLoadedFilters(true);},[prefs.data,loadedFilters]);
+  async function rank(){setSort("fit");if(!resume.trim()){setRankError("Add your resume on My resume to rank postings.");return;}setRanking(true);setRankError("");try{for(const job of JOBS.filter(j=>!isInactive(postingStatus(j,today)))){if(analyses[job.url])continue;const result=await run({data:{jobUrl:job.url,resumeText:resume}});saveAnalysis(job.url,result);}}catch(e){setRankError(e instanceof Error?e.message:"Ranking stopped; completed scores are saved.");}finally{setRanking(false);}}
   const now = new Date();
   const fresh = JOBS.filter((j) => isNew(j, now) && !isInactive(postingStatus(j, today)));
   const openCount = JOBS.filter((j) => !isInactive(postingStatus(j, today))).length;
@@ -122,14 +137,15 @@ function Board() {
     const filtered = JOBS.filter((j) =>
       (!hideExpired || !isInactive(postingStatus(j, today))) &&
       (!role || j.roleType === role) && (!loc || locBucket(j) === loc) && (!firm || j.firmType === firm) &&
-      (!sector || j.sectors.includes(sector)) &&
+      (!sector || j.sectors.includes(sector)) && (!stage||j.fundStage===stage) && (!mba||!!j.mbaSpecific===(mba==="Yes")) &&
       (!s || [j.firm, j.title, j.location, j.focus].join(" ").toLowerCase().includes(s)),
     );
+    if(sort==="fit")return filtered.filter(j=>!isInactive(postingStatus(j,today))).sort((a,b)=>(analyses[b.url]?.result.fitScore??-1)-(analyses[a.url]?.result.fitScore??-1));
     const byDate = filtered.sort((a, b) => (sort === "old" ? a.datePosted.localeCompare(b.datePosted) : b.datePosted.localeCompare(a.datePosted)));
     if (sort === "deadline") return sortByStatus(byDate, today);
     // Date sorts still keep deadline-passed and expired postings at the bottom.
     return [...byDate.filter((j) => !isInactive(postingStatus(j, today))), ...byDate.filter((j) => isInactive(postingStatus(j, today)))];
-  }, [JOBS, q, role, loc, firm, sector, sort, hideExpired, today]);
+  }, [JOBS, q, role, loc, firm, sector, stage,mba,analyses,sort, hideExpired, today]);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
@@ -139,7 +155,7 @@ function Board() {
           <BoardNav />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
-        <h1 className="mt-2 text-2xl font-bold text-primary sm:text-4xl sm:text-5xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span> Job Board</h1>
+        <h1 className="mt-2 text-xl font-bold text-primary sm:text-4xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span><br/>Job Board</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last verified: {lastVerified ? fmtDay(lastVerified) : "—"} · {openCount} open postings</p>
       </header>
 
@@ -160,21 +176,25 @@ function Board() {
           <Select label="Location" value={loc} onChange={setLoc} options={uniq(JOBS.map(locBucket))} />
           <Select label="Firm type" value={firm} onChange={setFirm} options={uniq(JOBS.map((j) => j.firmType))} />
           <Select label="Sector" value={sector} onChange={setSector} options={uniq(JOBS.flatMap((j) => j.sectors))} />
+          <Select label="Fund stage" value={stage} onChange={setStage} options={FUND_STAGES}/>
+          <Select label="MBA-specific" value={mba} onChange={setMba} options={["Yes","No"]}/>
           <label className="col-span-2 flex flex-col gap-1 text-xs font-medium text-muted-foreground">
             Sort
-            <select value={sort} onChange={(e) => setSort(e.target.value as "deadline" | "new" | "old")}
+            <select value={sort} onChange={(e) => {if(e.target.value==="fit")void rank();else setSort(e.target.value as "deadline" | "new" | "old");}} disabled={ranking}
               className="rounded-md border border-input bg-card px-2 py-2 text-sm text-foreground">
               <option value="deadline">Soonest deadline first</option>
               <option value="new">Newest posted first</option>
               <option value="old">Oldest posted first</option>
+              <option value="fit">Best fit for me</option>
             </select>
           </label>
         </div>
+        <div className="mt-3 flex flex-wrap gap-3 items-center"><Button variant="outline" size="sm" onClick={()=>void prefs.save({filters:{role,loc,firm,sector,stage,mba}}).then(()=>toast.success("Filters saved")).catch(()=>toast.error("Could not save filters"))}>Save filters</Button>{ranking&&<p className="text-xs text-muted-foreground">Checking open postings; completed scores are cached…</p>}{rankError&&<p className="text-sm text-destructive">{rankError}</p>}</div>
         <label className="mt-3 flex items-center gap-2 text-sm">
           <input type="checkbox" checked={hideExpired} onChange={(e) => setHideExpired(e.target.checked)} className="h-4 w-4 accent-primary" />
           Hide expired postings
         </label>
-        <p className="mt-2 text-xs text-muted-foreground">Accented cards are NYC roles or roles that explicitly mention MBA candidates.</p>
+
         <div className="mt-4 space-y-3">
           {list.length ? list.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :
             <p className="text-sm text-muted-foreground">No postings match these filters.</p>}
