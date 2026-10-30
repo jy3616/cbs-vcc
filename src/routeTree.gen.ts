@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedBookmarksRouteImport } from './routes/_authenticated/bookmarks'
+import { Route as AuthenticatedMyApplicationsRouteImport } from './routes/_authenticated/my-applications'
 import { Route as AuthenticatedMyResumeRouteImport } from './routes/_authenticated/my-resume'
 import { Route as AuthenticatedJobsSlugRouteImport } from './routes/_authenticated/jobs.$slug'
 import { Route as ApiPublicHooksCheckLinksRouteImport } from './routes/api/public/hooks/check-links'
@@ -37,6 +38,12 @@ const AuthenticatedBookmarksRoute = AuthenticatedBookmarksRouteImport.update({
   path: '/bookmarks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMyApplicationsRoute =
+  AuthenticatedMyApplicationsRouteImport.update({
+    id: '/my-applications',
+    path: '/my-applications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMyResumeRoute = AuthenticatedMyResumeRouteImport.update({
   id: '/my-resume',
   path: '/my-resume',
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/bookmarks': typeof AuthenticatedBookmarksRoute
+  '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
   '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
@@ -71,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/bookmarks': typeof AuthenticatedBookmarksRoute
+  '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
   '/': typeof AuthenticatedIndexRoute
   '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
@@ -82,6 +91,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/bookmarks': typeof AuthenticatedBookmarksRoute
+  '/_authenticated/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/_authenticated/my-resume': typeof AuthenticatedMyResumeRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/jobs/$slug': typeof AuthenticatedJobsSlugRoute
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/bookmarks'
+    | '/my-applications'
     | '/my-resume'
     | '/jobs/$slug'
     | '/api/public/hooks/check-links'
@@ -102,6 +113,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/bookmarks'
+    | '/my-applications'
     | '/my-resume'
     | '/'
     | '/jobs/$slug'
@@ -112,6 +124,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/bookmarks'
+    | '/_authenticated/my-applications'
     | '/_authenticated/my-resume'
     | '/_authenticated/'
     | '/_authenticated/jobs/$slug'
@@ -156,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookmarksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/my-applications': {
+      id: '/_authenticated/my-applications'
+      path: '/my-applications'
+      fullPath: '/my-applications'
+      preLoaderRoute: typeof AuthenticatedMyApplicationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/my-resume': {
       id: '/_authenticated/my-resume'
       path: '/my-resume'
@@ -189,6 +209,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBookmarksRoute: typeof AuthenticatedBookmarksRoute
+  AuthenticatedMyApplicationsRoute: typeof AuthenticatedMyApplicationsRoute
   AuthenticatedMyResumeRoute: typeof AuthenticatedMyResumeRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedJobsSlugRoute: typeof AuthenticatedJobsSlugRoute
@@ -196,6 +217,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBookmarksRoute: AuthenticatedBookmarksRoute,
+  AuthenticatedMyApplicationsRoute: AuthenticatedMyApplicationsRoute,
   AuthenticatedMyResumeRoute: AuthenticatedMyResumeRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedJobsSlugRoute: AuthenticatedJobsSlugRoute,

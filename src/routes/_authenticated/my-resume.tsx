@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { BrandLockup } from "@/components/BrandLockup";
 import { BoardNav } from "@/components/BoardNav";
 import { extractResumeText } from "@/lib/resume-file";
+import { Button } from "@/components/ui/button";
 import { useResume } from "@/lib/resume-store";
 
 export const Route = createFileRoute("/_authenticated/my-resume")({
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/my-resume")({
 });
 
 function MyResume() {
-  const { text, ready, save } = useResume();
+  const { text, ready, save, account, setAccount } = useResume();
   const [busy, setBusy] = useState(false);
 
   async function upload(file: File) {
@@ -40,13 +41,13 @@ function MyResume() {
       toast.error("We couldn't find text in that file. If it's a scanned image, export it from Word or Google Docs as a PDF and try again.");
       return;
     }
-    save(content);
+    await save(content);
     toast.success(`Resume saved: ${file.name}`);
   }
 
-  function remove() {
+  async function remove() {
     if (!confirm("Delete your saved resume? This also removes your saved fit results.")) return;
-    save("");
+    await save("");
     toast.success("Resume deleted");
   }
 
@@ -60,10 +61,8 @@ function MyResume() {
         <Link to="/" className="text-sm text-muted-foreground hover:underline">← Back to job board</Link>
       </div>
       <h1 className="mt-4 text-3xl font-bold text-primary">My resume</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Upload your resume as a PDF or Word (.docx) file. It's saved only in this browser — nothing is stored on our
-        servers — and it's used for "Check My Fit" on each posting. Clearing your browser data removes it.
-      </p>
+      <p className="mt-2 text-sm text-muted-foreground">Browser only keeps your resume on this device; saving to your account stores it privately so you can use it across devices.</p>
+      <label className="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" checked={account} disabled={!ready} onChange={e=>void setAccount(e.target.checked).catch(()=>toast.error('Could not change resume storage.'))}/>Save resume to my account</label>
       <label className={`mt-5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-input bg-card p-8 text-center hover:bg-secondary ${busy || !ready ? "pointer-events-none opacity-50" : ""}`}>
         <span className="font-medium">{busy ? "Reading your resume…" : text ? "Upload a new resume" : "Choose your resume file"}</span>
         <span className="text-xs text-muted-foreground">PDF or Word (.docx), up to 10 MB</span>
@@ -78,11 +77,11 @@ function MyResume() {
       )}
       <div className="mt-3 flex flex-wrap items-center gap-3">
         {text && (
-          <button onClick={remove} className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-secondary">
+          <Button variant="outline" onClick={remove}>
             Delete resume
-          </button>
+          </Button>
         )}
-        {text && <span className="text-xs text-muted-foreground">Saved in this browser</span>}
+        {text && <span className="text-xs text-muted-foreground">{account ? "Saved privately to your account" : "Saved in this browser"}</span>}
       </div>
     </div>
   );
