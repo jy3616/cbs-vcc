@@ -50,6 +50,13 @@
       "when": 1793317511807,
       "tag": "0006_source_scraping_and_run_history",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793321257502,
+      "tag": "0007_student_accounts_and_admin_tools",
+      "breakpoints": true
     }
   ]
 }

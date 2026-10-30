@@ -41,6 +41,30 @@ export type Database = {
         }
         Relationships: []
       }
+      broken_link_reports: {
+        Row: {
+          id: string
+          posting_id: string
+          reported_at: string
+          resolved: boolean
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          posting_id: string
+          reported_at?: string
+          resolved?: boolean
+          user_id: string
+        }
+        Update: {
+          id?: string
+          posting_id?: string
+          reported_at?: string
+          resolved?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       job_analyses: {
         Row: {
           created_at: string
@@ -94,6 +118,7 @@ export type Database = {
       }
       postings: {
         Row: {
+          alumni: string
           created_at: string
           date_posted: string
           deadline: string | null
@@ -101,23 +126,29 @@ export type Database = {
           firm: string
           firm_type: string
           focus: string
+          fund_stage: string
+          hidden: boolean
           id: string
           last_checked_at: string | null
           last_verified_at: string
           location: string
+          mba_specific: boolean
           mentions_mba: boolean
           needs_review: boolean
+          notes: string
           nyc: boolean
           review_reason: string
           role_type: string
           rolling: boolean
           sectors: string[]
+          shared_by_vcc: boolean
           source_id: string | null
           source_job_id: string | null
           title: string
           url: string
         }
         Insert: {
+          alumni?: string
           created_at?: string
           date_posted?: string
           deadline?: string | null
@@ -125,23 +156,29 @@ export type Database = {
           firm: string
           firm_type?: string
           focus?: string
+          fund_stage?: string
+          hidden?: boolean
           id?: string
           last_checked_at?: string | null
           last_verified_at?: string
           location?: string
+          mba_specific?: boolean
           mentions_mba?: boolean
           needs_review?: boolean
+          notes?: string
           nyc?: boolean
           review_reason?: string
           role_type?: string
           rolling?: boolean
           sectors?: string[]
+          shared_by_vcc?: boolean
           source_id?: string | null
           source_job_id?: string | null
           title: string
           url: string
         }
         Update: {
+          alumni?: string
           created_at?: string
           date_posted?: string
           deadline?: string | null
@@ -149,17 +186,22 @@ export type Database = {
           firm?: string
           firm_type?: string
           focus?: string
+          fund_stage?: string
+          hidden?: boolean
           id?: string
           last_checked_at?: string | null
           last_verified_at?: string
           location?: string
+          mba_specific?: boolean
           mentions_mba?: boolean
           needs_review?: boolean
+          notes?: string
           nyc?: boolean
           review_reason?: string
           role_type?: string
           rolling?: boolean
           sectors?: string[]
+          shared_by_vcc?: boolean
           source_id?: string | null
           source_job_id?: string | null
           title?: string
@@ -177,16 +219,19 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string
           created_at: string
           display_name: string | null
           id: string
         }
         Insert: {
+          avatar_url?: string
           created_at?: string
           display_name?: string | null
           id: string
         }
         Update: {
+          avatar_url?: string
           created_at?: string
           display_name?: string | null
           id?: string
@@ -340,6 +385,51 @@ export type Database = {
         }
         Relationships: []
       }
+      student_bookmarks: {
+        Row: {
+          job_url: string
+          saved_at: string
+          snapshot: Json
+          status: string
+          user_id: string
+        }
+        Insert: {
+          job_url: string
+          saved_at?: string
+          snapshot?: Json
+          status?: string
+          user_id: string
+        }
+        Update: {
+          job_url?: string
+          saved_at?: string
+          snapshot?: Json
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      student_preferences: {
+        Row: {
+          digest_enabled: boolean
+          filters: Json
+          resume_account: boolean
+          user_id: string
+        }
+        Insert: {
+          digest_enabled?: boolean
+          filters?: Json
+          resume_account?: boolean
+          user_id: string
+        }
+        Update: {
+          digest_enabled?: boolean
+          filters?: Json
+          resume_account?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -363,6 +453,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      board_last_verified: { Args: never; Returns: string }
       claim_source_scrape: {
         Args: { p_date: string; p_source: string }
         Returns: string
@@ -376,6 +467,10 @@ export type Database = {
         }
         Returns: Json
       }
+      grant_student_admin: {
+        Args: { target_email: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -383,6 +478,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_cbs_student: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
