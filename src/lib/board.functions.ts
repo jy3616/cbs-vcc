@@ -1,6 +1,24 @@
 import {createServerFn} from '@tanstack/react-start';
-import {requireStudent} from './student-middleware';
-export const getBoardData=createServerFn({method:'GET'}).middleware([requireStudent]).handler(async({context})=>{
- const [postings,run]=await Promise.all([context.supabase.from('postings').select('*').eq('hidden',false).order('date_posted',{ascending:false}),context.supabase.rpc('board_last_verified')]);
- if(postings.error)throw new Error('The board could not load.');if(run.error)throw new Error('Verification history could not load.');return {postings:postings.data,lastVerified:run.data};
+import {createClient} from '@supabase/supabase-js';
+import type {Database} from '@/integrations/supabase/types';
+export const getBoardData=createServerFn({method:'GET'}).handler(async()=>{
+ const key=process.env['SUPABASE_PUBLISHABLE_KEY'];
+ const url=process.env['SUPABASE_URL'];
+ if(!key||!url)throw new Error('The board could not load.');
+ const publicClient=createClient<Database>(url,key,{
+  auth:{persistSession:false,autoRefreshToken:false},
+  global:{fetch:(input,init)=>{
+   const headers=new Headers(init?.headers);
+   if(key.startsWith('sb_')&&headers.get('Authorization')===`Bearer ${key}`)headers.delete('Authorization');
+   headers.set('apikey',key);
+   return fetch(input,{...init,headers});
+  }},
+ });
+ const [postings,run]=await Promise.all([
+  publicClient.from('postings').select('id,firm,title,location,firm_type,focus,sectors,role_type,date_posted,deadline,rolling,url,nyc,mentions_mba,expired,last_verified_at,needs_review,last_checked_at,fund_stage,mba_specific,alumni,notes,shared_by_vcc').eq('hidden',false).order('date_posted',{ascending:false}),
+  publicClient.rpc('board_last_verified'),
+ ]);
+ if(postings.error)throw new Error('The board could not load.');
+ if(run.error)throw new Error('Verification history could not load.');
+ return {postings:postings.data,lastVerified:run.data};
 });

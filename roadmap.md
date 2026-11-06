@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Done
+- Public job board and posting details open without sign-in; account, resume, bookmarks, applications, and admin pages remain protected. Verified 47 postings, pagination, mobile layout, and signed-out private-page redirects.
 - Build CBS VC job board (7 postings, filters, search, sort, NYC/MBA highlights)
 - Columbia Business School logo at top + browser tab icon
 - Venture Capital Club logo in the header

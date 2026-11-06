@@ -9,18 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBookmarksRouteImport } from './routes/_authenticated/bookmarks'
 import { Route as AuthenticatedMyApplicationsRouteImport } from './routes/_authenticated/my-applications'
 import { Route as AuthenticatedMyResumeRouteImport } from './routes/_authenticated/my-resume'
-import { Route as AuthenticatedJobsSlugRouteImport } from './routes/_authenticated/jobs.$slug'
+import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
 import { Route as ApiPublicHooksCheckLinksRouteImport } from './routes/api/public/hooks/check-links'
 import { Route as ApiPublicJobsDiscoverRouteImport } from './routes/api/public/jobs/discover'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -29,11 +34,6 @@ const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
@@ -61,10 +61,10 @@ const AuthenticatedMyResumeRoute = AuthenticatedMyResumeRouteImport.update({
   path: '/my-resume',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedJobsSlugRoute = AuthenticatedJobsSlugRouteImport.update({
+const JobsSlugRoute = JobsSlugRouteImport.update({
   id: '/jobs/$slug',
   path: '/jobs/$slug',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicHooksCheckLinksRoute =
   ApiPublicHooksCheckLinksRouteImport.update({
@@ -79,31 +79,32 @@ const ApiPublicJobsDiscoverRoute = ApiPublicJobsDiscoverRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/bookmarks': typeof AuthenticatedBookmarksRoute
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
-  '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
   '/api/public/jobs/discover': typeof ApiPublicJobsDiscoverRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/bookmarks': typeof AuthenticatedBookmarksRoute
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
-  '/': typeof AuthenticatedIndexRoute
-  '/jobs/$slug': typeof AuthenticatedJobsSlugRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
   '/api/public/jobs/discover': typeof ApiPublicJobsDiscoverRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
@@ -111,8 +112,7 @@ export interface FileRoutesById {
   '/_authenticated/bookmarks': typeof AuthenticatedBookmarksRoute
   '/_authenticated/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/_authenticated/my-resume': typeof AuthenticatedMyResumeRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/jobs/$slug': typeof AuthenticatedJobsSlugRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/api/public/hooks/check-links': typeof ApiPublicHooksCheckLinksRoute
   '/api/public/jobs/discover': typeof ApiPublicJobsDiscoverRoute
 }
@@ -131,18 +131,19 @@ export interface FileRouteTypes {
     | '/api/public/jobs/discover'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/auth'
     | '/account'
     | '/admin'
     | '/bookmarks'
     | '/my-applications'
     | '/my-resume'
-    | '/'
     | '/jobs/$slug'
     | '/api/public/hooks/check-links'
     | '/api/public/jobs/discover'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/account'
@@ -150,21 +151,29 @@ export interface FileRouteTypes {
     | '/_authenticated/bookmarks'
     | '/_authenticated/my-applications'
     | '/_authenticated/my-resume'
-    | '/_authenticated/'
-    | '/_authenticated/jobs/$slug'
+    | '/jobs/$slug'
     | '/api/public/hooks/check-links'
     | '/api/public/jobs/discover'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  JobsSlugRoute: typeof JobsSlugRoute
   ApiPublicHooksCheckLinksRoute: typeof ApiPublicHooksCheckLinksRoute
   ApiPublicJobsDiscoverRoute: typeof ApiPublicJobsDiscoverRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -178,13 +187,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/account': {
       id: '/_authenticated/account'
@@ -221,12 +223,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMyResumeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/jobs/$slug': {
-      id: '/_authenticated/jobs/$slug'
+    '/jobs/$slug': {
+      id: '/jobs/$slug'
       path: '/jobs/$slug'
       fullPath: '/jobs/$slug'
-      preLoaderRoute: typeof AuthenticatedJobsSlugRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof JobsSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/check-links': {
       id: '/api/public/hooks/check-links'
@@ -251,8 +253,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBookmarksRoute: typeof AuthenticatedBookmarksRoute
   AuthenticatedMyApplicationsRoute: typeof AuthenticatedMyApplicationsRoute
   AuthenticatedMyResumeRoute: typeof AuthenticatedMyResumeRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedJobsSlugRoute: typeof AuthenticatedJobsSlugRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -261,16 +261,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBookmarksRoute: AuthenticatedBookmarksRoute,
   AuthenticatedMyApplicationsRoute: AuthenticatedMyApplicationsRoute,
   AuthenticatedMyResumeRoute: AuthenticatedMyResumeRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedJobsSlugRoute: AuthenticatedJobsSlugRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  JobsSlugRoute: JobsSlugRoute,
   ApiPublicHooksCheckLinksRoute: ApiPublicHooksCheckLinksRoute,
   ApiPublicJobsDiscoverRoute: ApiPublicJobsDiscoverRoute,
 }

@@ -18,9 +18,10 @@ import { usePreferences } from "@/lib/account";
 import { analyzeFit } from "@/lib/fit.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { useStudent } from "@/lib/auth";
 import { BoardNav } from "@/components/BoardNav";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
     await Promise.all([context.queryClient.ensureQueryData(postingsQuery), context.queryClient.ensureQueryData(verificationQuery)]);
   },
@@ -46,6 +47,7 @@ const uniq = (xs: string[]) => Array.from(new Set(xs.filter(Boolean))).sort();
 const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" : /remote/i.test(j.location) ? "Remote" : "Other US");
 
 function JobCard({ j, score, bookmarked, onToggleBookmark }: { j: Job; score?: number | undefined; bookmarked: boolean; onToggleBookmark: () => void }) {
+  const { user } = useStudent();
   const hl = j.nyc || j.mentionsMba;
   return (
     <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""} ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
@@ -61,11 +63,11 @@ function JobCard({ j, score, bookmarked, onToggleBookmark }: { j: Job; score?: n
           </h3>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="outline" type="button" onClick={onToggleBookmark} aria-pressed={bookmarked}
+          {user ? <Button variant="outline" type="button" onClick={onToggleBookmark} aria-pressed={bookmarked}
             title={bookmarked ? "Remove bookmark" : "Bookmark this posting"}
             className={`rounded-md border px-3 py-1.5 text-sm font-medium ${bookmarked ? "border-accent bg-highlight text-highlight-foreground" : "border-input text-muted-foreground hover:bg-secondary"}`}>
             {bookmarked ? "★ Bookmarked" : "☆ Bookmark"}
-          </Button>
+          </Button> : <Link to="/auth" className="rounded-md border border-input px-3 py-1.5 text-sm text-muted-foreground hover:bg-secondary">Sign in to bookmark</Link>}
           <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }}
             className="rounded-md border border-primary px-3 py-1.5 text-sm font-medium text-primary hover:bg-secondary">
             Check My Fit
@@ -109,6 +111,7 @@ function Select({ label, value, onChange, options }: { label: string; value: str
 }
 
 function Board() {
+  const { user } = useStudent();
   const [q, setQ] = useState("");
   const [role, setRole] = useState("");
   const [loc, setLoc] = useState("");
@@ -200,11 +203,11 @@ function Board() {
               <option value="deadline">Soonest deadline first</option>
               <option value="new">Newest posted first</option>
               <option value="old">Oldest posted first</option>
-              <option value="fit">Best fit for me</option>
+              {user && <option value="fit">Best fit for me</option>}
             </select>
           </label>
         </div>
-        <div className="mt-3 flex flex-wrap gap-3 items-center"><Button variant="outline" size="sm" onClick={()=>void prefs.save({filters:{role,loc,firm,sector,stage,mba}}).then(()=>toast.success("Filters saved")).catch(()=>toast.error("Could not save filters"))}>Save filters</Button>{ranking&&<p className="text-xs text-muted-foreground">Checking open postings; completed scores are cached…</p>}{rankError&&<p className="text-sm text-destructive">{rankError}</p>}</div>
+        <div className="mt-3 flex flex-wrap gap-3 items-center">{user && <Button variant="outline" size="sm" onClick={()=>void prefs.save({filters:{role,loc,firm,sector,stage,mba}}).then(()=>toast.success("Filters saved")).catch(()=>toast.error("Could not save filters"))}>Save filters</Button>}{ranking&&<p className="text-xs text-muted-foreground">Checking open postings; completed scores are cached…</p>}{rankError&&<p className="text-sm text-destructive">{rankError}</p>}</div>
         <label className="mt-3 flex items-center gap-2 text-sm">
           <input type="checkbox" checked={hideExpired} onChange={(e) => setHideExpired(e.target.checked)} className="h-4 w-4 accent-primary" />
           Hide expired postings

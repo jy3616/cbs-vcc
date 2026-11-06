@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useStudent } from "@/lib/auth";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { BrandLockup } from "@/components/BrandLockup";
@@ -13,7 +14,7 @@ import { jobSlug, type FitResult } from "@/lib/fit";
 import { analyzeFit } from "@/lib/fit.functions";
 import { useAnalyses, useResume } from "@/lib/resume-store";
 
-export const Route = createFileRoute("/_authenticated/jobs/$slug")({
+export const Route = createFileRoute("/jobs/$slug")({
   head: () => {
     const t = "Job posting";
     return {
@@ -47,6 +48,7 @@ function JobDetail() {
 }
 
 function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
+  const { user } = useStudent();
   const { text: resume, ready } = useResume();
   const { map, save } = useAnalyses();
   const saved = map[job.url];
@@ -99,7 +101,7 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
       <section className="mt-8">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-2xl font-semibold">Resume Match</h2>
-          {hasResume && (
+          {user && hasResume && (
             <Button onClick={check} disabled={running}
               className="ml-auto rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
               {running ? "Analyzing…" : saved ? "Regenerate" : "Check My Fit"}
@@ -108,7 +110,8 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
         </div>
 
         <p className="mt-2 text-xs text-muted-foreground">Your resume text is sent to an AI service for this check and is not stored afterward; only your chosen resume storage and cached results remain.</p>
-        {ready && !hasResume && (
+        {!user && <Link to="/auth" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">Sign in to check your fit →</Link>}
+        {user && ready && !hasResume && (
           <p className="mt-4 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
             Add your resume first to check your fit.{" "}
             <Link to="/my-resume" className="font-medium text-primary hover:underline">Go to My Resume →</Link>
@@ -121,7 +124,7 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
             Reading the posting and comparing it with your resume — this can take up to a minute…
           </div>
         )}
-        {!running && saved && <Results r={saved.result} at={saved.at} />}
+        {user && !running && saved && <Results r={saved.result} at={saved.at} />}
       </section>
     </div>
   );

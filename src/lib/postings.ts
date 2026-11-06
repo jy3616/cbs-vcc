@@ -5,13 +5,13 @@ import type { Job } from "@/data/jobs";
 
 type Row = Database["public"]["Tables"]["postings"]["Row"];
 
-export function rowToJob(r: Row): Job {
+export function rowToJob(r: Pick<Row, "alumni" | "date_posted" | "deadline" | "expired" | "firm" | "firm_type" | "focus" | "fund_stage" | "id" | "last_checked_at" | "last_verified_at" | "location" | "mba_specific" | "mentions_mba" | "needs_review" | "notes" | "nyc" | "role_type" | "rolling" | "sectors" | "shared_by_vcc" | "title" | "url">): Job {
   return {
     fundStage:r.fund_stage,mbaSpecific:r.mba_specific,alumni:r.alumni,notes:r.notes,sharedByVcc:r.shared_by_vcc,
     id: r.id, firm: r.firm, title: r.title, location: r.location, firmType: r.firm_type, focus: r.focus,
     sectors: r.sectors, roleType: r.role_type, datePosted: r.date_posted, deadline: r.deadline ?? "",
     rolling: r.rolling, url: r.url, nyc: r.nyc, mentionsMba: r.mentions_mba, expired: r.expired,
-    lastVerified: r.last_verified_at, needsReview: r.needs_review, reviewReason: r.review_reason,
+    lastVerified: r.last_verified_at, needsReview: r.needs_review, reviewReason: "",
     lastChecked: r.last_checked_at ?? "",
   };
 }
