@@ -22,4 +22,8 @@ describe('investment-only source checks', () => {
   ] }).map(j => j.title)).toEqual(['Analyst']));
   it('does not treat an unparsed HTML shell as absent roles', () => expect(() => parseHtml(source, '<html><body>Loading</body></html>')).toThrow());
   it('recognizes an explicit empty careers page', () => expect(parseHtml(source, '<p>No open positions</p>')).toEqual([]));
+  it('extracts investment jobs and MBA evidence from HTML sources', () => {
+    const html = '<script type="application/ld+json">{"@type":"JobPosting","title":"Investment Associate","url":"https://firm.test/jobs/associate","jobLocation":{"address":{"addressLocality":"New York"}},"description":"<p>MBA preferred &amp; venture experience</p>"}</script>';
+    expect(parseHtml(source, html)).toEqual([{id:'https://firm.test/jobs/associate',title:'Investment Associate',url:'https://firm.test/jobs/associate',location:'New York',nyc:true,mentionsMba:true,roleType:'Full-time'}]);
+  });
 });

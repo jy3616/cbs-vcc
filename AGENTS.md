@@ -15,6 +15,7 @@
 - Job postings live in the Cloud postings table with visible-row public read policies (src/data/jobs.ts only holds types); status (Open/Closing soon/Deadline passed/Expired) is computed from dates in src/lib/status.ts, never stored, so it stays correct daily.
 - Hourly link checking skips excluded hosts, flags transient failures, and expires only confirmed 404s; source absence expires only after a successful complete source read. Why: blocked pages must never remove valid openings.
 - Daily source scraping uses independent authenticated managed callbacks per active source at the same morning window; each reads its public ATS API or parses HTML, then transactional RPCs claim and record the aggregate daily scrape_runs entry. Why: short scheduler callbacks cannot safely run a whole multi-source crawl, and database locking prevents duplicate writes.
+- HTML source parsing must import cheerio/slim, not cheerio; the full entry loads Node-only networking dependencies that crash published daily callbacks.
 - Public board reads use a server publishable client with a safe column projection and visible-row anon RLS; last-verification RPC exposes only the aggregate timestamp while detailed scrape errors remain admin-only.
 - Deadline-passed postings are deleted daily by a SQL-only pg_cron job. Why: the user wants them gone, not just labelled.
 

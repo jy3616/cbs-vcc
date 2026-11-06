@@ -17,7 +17,7 @@ export function BoardNav({ current }: Props) {
   const link = (active: boolean) =>
     `rounded-md border px-3 py-1.5 font-medium ${active ? "border-accent bg-highlight text-highlight-foreground" : "border-input hover:bg-secondary"}`;
 
-  if (!user) return <nav className="ml-auto text-sm" aria-label="Board pages"><Link to="/auth" className={link(false)}>Student sign-in</Link></nav>;
+  if (!user) return null;
 
   return (
     <nav className="ml-auto flex flex-wrap items-center gap-2 text-sm" aria-label="Board pages">

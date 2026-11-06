@@ -63,15 +63,15 @@ function JobCard({ j, score, bookmarked, onToggleBookmark }: { j: Job; score?: n
           </h3>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
-          {user ? <Button variant="outline" type="button" onClick={onToggleBookmark} aria-pressed={bookmarked}
+          {user && <Button variant="outline" type="button" onClick={onToggleBookmark} aria-pressed={bookmarked}
             title={bookmarked ? "Remove bookmark" : "Bookmark this posting"}
             className={`rounded-md border px-3 py-1.5 text-sm font-medium ${bookmarked ? "border-accent bg-highlight text-highlight-foreground" : "border-input text-muted-foreground hover:bg-secondary"}`}>
             {bookmarked ? "★ Bookmarked" : "☆ Bookmark"}
-          </Button> : <Link to="/auth" className="rounded-md border border-input px-3 py-1.5 text-sm text-muted-foreground hover:bg-secondary">Sign in to bookmark</Link>}
-          <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }}
+          </Button>}
+          {user && <Link to="/jobs/$slug" params={{ slug: jobSlug(j) }}
             className="rounded-md border border-primary px-3 py-1.5 text-sm font-medium text-primary hover:bg-secondary">
             Check My Fit
-          </Link>
+          </Link>}
           <a href={j.url} target="_blank" rel="noopener noreferrer"
             className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
             Apply ↗

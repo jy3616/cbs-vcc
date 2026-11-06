@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Done
+- Fixed the published daily scraper crash by using the Worker-compatible HTML reader; refreshed 29 sources on November 6 (23 successful, 6 incomplete HTML lists; 2 added, 18 updated, 1 expired). Public board now shows 48 open postings and November 6 verification; removed public sign-in links and fixed verification-date timezone mismatch.
 - Public job board and posting details open without sign-in; account, resume, bookmarks, applications, and admin pages remain protected. Verified 47 postings, pagination, mobile layout, and signed-out private-page redirects.
 - Build CBS VC job board (7 postings, filters, search, sort, NYC/MBA highlights)
 - Columbia Business School logo at top + browser tab icon
@@ -24,7 +25,7 @@
 - Scraped Indeed/Glassdoor/other job sites for VC postings: added 6 verified roles (HOF Capital Analyst, Associate, Fall 2026 Intern; J2 Ventures Associate; Intermountain Ventures Analyst; Impression Ventures Analyst) — board now 20 postings
 
 ## Open
-- Publish the updated daily checks (awaiting user publishing request)
+- Publish the corrected daily source reader and sign-in removal; existing active schedules check every source around 6am ET, but the live website still uses the crashing reader until published.
 - Weekly digest sending: blocked on the user choosing a dedicated email service
 - Signed-in student/admin end-to-end and board mobile verification: blocked on first verified CBS student sign-in (existing accounts are outside the allowed domain)
 

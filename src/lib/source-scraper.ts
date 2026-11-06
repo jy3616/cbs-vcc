@@ -1,4 +1,5 @@
-import { load } from 'cheerio';
+// The slim entry excludes Node-only HTTP/stream dependencies on published Workers.
+import { load } from 'cheerio/slim';
 import { z } from 'zod';
 
 export type Source = { id: string; firm_name: string; careers_url: string; ats_type: string; ats_board: string };

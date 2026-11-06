@@ -18,6 +18,7 @@ export function rowToJob(r: Pick<Row, "alumni" | "date_posted" | "deadline" | "e
 
 export const postingsQuery = queryOptions({
   queryKey: ["postings"],
+  refetchInterval: 60000,
   queryFn: async () => {
     const data = await getBoardData();
     return data.postings.map(rowToJob);
@@ -28,6 +29,7 @@ export const verificationQuery = queryOptions({
   queryKey: ['verification-run'],
   queryFn: async () => (await getBoardData()).lastVerified,
   staleTime: 60000,
+  refetchInterval: 60000,
 });
 
 export function usePostings() {
@@ -35,4 +37,4 @@ export function usePostings() {
 }
 
 export const fmtDay = (d: string) =>
-  d ? new Date(d.length === 10 ? d + "T12:00:00" : d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+  d ? new Date(d.length === 10 ? d + "T12:00:00" : d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" }) : "";

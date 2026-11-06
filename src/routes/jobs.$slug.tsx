@@ -8,7 +8,7 @@ import { postedDays } from "@/lib/student";
 import { todayET } from "@/lib/status";
 import { Button } from "@/components/ui/button";
 import { BoardNav } from "@/components/BoardNav";
-import { usePostings } from "@/lib/postings";
+import { usePostings, fmtDay } from "@/lib/postings";
 import { StatusLabel } from "@/components/StatusLabel";
 import { jobSlug, type FitResult } from "@/lib/fit";
 import { analyzeFit } from "@/lib/fit.functions";
@@ -89,7 +89,7 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
           ))}
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          Posted {postedDays(job.datePosted,todayET())} days ago · {job.rolling || !job.deadline ? "Rolling / no deadline" : `Deadline ${fmt(job.deadline)}`} · Last verified {new Date(job.lastVerified).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          Posted {postedDays(job.datePosted,todayET())} days ago · {job.rolling || !job.deadline ? "Rolling / no deadline" : `Deadline ${fmt(job.deadline)}`} · Last verified {fmtDay(job.lastVerified)}
         </p>
         <a href={job.url} target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90">
@@ -98,7 +98,7 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
       <PostingExtras job={job}/>
       </article>
 
-      <section className="mt-8">
+      {user && <section className="mt-8">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-2xl font-semibold">Resume Match</h2>
           {user && hasResume && (
@@ -110,7 +110,6 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
         </div>
 
         <p className="mt-2 text-xs text-muted-foreground">Your resume text is sent to an AI service for this check and is not stored afterward; only your chosen resume storage and cached results remain.</p>
-        {!user && <Link to="/auth" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">Sign in to check your fit →</Link>}
         {user && ready && !hasResume && (
           <p className="mt-4 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
             Add your resume first to check your fit.{" "}
@@ -125,7 +124,7 @@ function JobDetailBody({ job }: { job: import("@/data/jobs").Job }) {
           </div>
         )}
         {user && !running && saved && <Results r={saved.result} at={saved.at} />}
-      </section>
+      </section>}
     </div>
   );
 }
