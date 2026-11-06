@@ -22,6 +22,19 @@ describe('investment-only source checks', () => {
   ] }).map(j => j.title)).toEqual(['Analyst']));
   it('does not treat an unparsed HTML shell as absent roles', () => expect(() => parseHtml(source, '<html><body>Loading</body></html>')).toThrow());
   it('recognizes an explicit empty careers page', () => expect(parseHtml(source, '<p>No open positions</p>')).toEqual([]));
+  it('keeps Yamaha investment senior associates with the real board location', () => {
+    const jobs = parseHtml({ ...source, firm_name: 'Yamaha Motor Ventures' }, '<a href="https://yamaha.test/p/1"><h2>Senior Associate</h2><ul><li class="location">Palo Alto, CA</li></ul>Apply</a>');
+    expect(jobs.map(j => [j.title, j.location])).toEqual([['Senior Associate', 'Palo Alto, CA']]);
+  });
+  it('reads In-Q-Tel investment summer associates from complete iCIMS boards', () => {
+    const jobs = parseHtml(source, '<p>Search Results Page 1 of 1</p><li class="iCIMS_JobCardItem"><div class="header left"><span class="field-label">Job Locations</span><span>US-CA-Menlo Park</span></div><a href="https://iqt.test/jobs/1460"><span>Job Title</span><h3>Investment Summer Associate</h3></a><div class="description">Investment team</div></li>');
+    expect(jobs.map(j => [j.title, j.location, j.roleType])).toEqual([['Investment Summer Associate', 'US-CA-Menlo Park', 'Summer internship']]);
+  });
+  it('never expires roles using only the first iCIMS page', () => expect(() => parseHtml(source, '<p>Search Results Page 1 of 2</p><a href="https://firm.test/1">Investment Associate</a>')).toThrow('Incomplete'));
+  it('reads a single structured listing and all its locations', () => {
+    const jobs = parseHtml(source, '<script type="application/ld+json">{"@type":"JobPosting","title":"Investment Associate","url":"https://firm.test/careers","jobLocation":[{"address":{"addressLocality":"New York"}},{"address":{"addressLocality":"Dallas"}}]}</script>');
+    expect(jobs.map(j => [j.url, j.location])).toEqual([['https://firm.test/careers', 'New York / Dallas']]);
+  });
   it('extracts investment jobs and MBA evidence from HTML sources', () => {
     const html = '<script type="application/ld+json">{"@type":"JobPosting","title":"Investment Associate","url":"https://firm.test/jobs/associate","jobLocation":{"address":{"addressLocality":"New York"}},"description":"<p>MBA preferred &amp; venture experience</p>"}</script>';
     expect(parseHtml(source, html)).toEqual([{id:'https://firm.test/jobs/associate',title:'Investment Associate',url:'https://firm.test/jobs/associate',location:'New York',nyc:true,mentionsMba:true,roleType:'Full-time'}]);

@@ -44,6 +44,8 @@ export function parseAts(source: Source, payload: unknown): SourceJob[] {
 export function parseHtml(source: Source, html: string): SourceJob[] {
   const $ = load(html);
   if (/captcha|access denied|verify you are human/i.test($('title').text())) throw new Error('Careers page blocked the check');
+  const pagination = $.text().match(/Search Results Page\s+\d+\s+of\s+(\d+)/i);
+  if (pagination && Number(pagination[1]) > 1) throw new Error('Incomplete paginated job list; existing postings preserved');
   const output: SourceJob[] = [];
   let structured = false;
   $('script[type="application/ld+json"]').each((_, node) => {
@@ -55,20 +57,28 @@ export function parseHtml(source: Source, html: string): SourceJob[] {
         const title = str(r['title']);
         if (!investmentRole(title, str(r.occupationalCategory))) continue;
         const url = new URL(str(r.url) || source.careers_url, source.careers_url).href;
-        if (url === source.careers_url || isLinkedIn(url)) continue;
-        output.push(job(url, title, url, str(r.jobLocation?.address?.addressLocality), text(str(r['description']))));
+        if (!url.startsWith('https://') || isLinkedIn(url)) continue;
+        const locations = Array.isArray(r.jobLocation) ? r.jobLocation : [r.jobLocation];
+        const location = locations.map((place: { address?: { addressLocality?: unknown } } | undefined) => str(place?.address?.addressLocality)).filter(Boolean).join(' / ');
+        output.push(job(url, title, url, location, text(str(r['description']))));
       }
     } catch { /* A malformed unrelated JSON-LD block is not a jobs list. */ }
   });
   $('a[href]').each((_, node) => {
-    const title = $(node).text().replace(/\s+/g, ' ').trim();
-    if (title.length > 160 || !investmentRole(title)) return;
+    const anchor = $(node);
+    const title = (anchor.find('h2, h3').first().text() || anchor.text()).replace(/\s+/g, ' ').trim();
+    const item = anchor.closest('.iCIMS_JobCardItem, .list-group-item, [data-slot="card-content"]');
+    const description = item.find('.description').text();
+    // Breezy titles omit the investment department on this dedicated firm board.
+    const department = source.firm_name === 'Yamaha Motor Ventures' ? 'Venture investment' : description;
+    if (title.length > 160 || !investmentRole(title, department)) return;
     const href = $(node).attr('href');
     if (!href) return;
     try {
       const url = new URL(href, source.careers_url).href;
       if (isLinkedIn(url) || !url.startsWith('https://') || url === source.careers_url || /#|mailto:/i.test(href)) return;
-      output.push(job(url, title, url, '', ''));
+      const location = anchor.find('.location').text().trim() || item.find('.header.left > span:not(.field-label)').text().trim() || item.find('.list-group-item-text > li').first().text().trim() || item.find('p').last().text().trim();
+      output.push(job(url, title, url, location, description));
     } catch { /* Ignore invalid links. */ }
   });
   if (!output.length && !structured && !/no (current |open |available )?(positions|openings|vacancies|jobs)|not (currently )?hiring/i.test($.text())) {
@@ -78,6 +88,9 @@ export function parseHtml(source: Source, html: string): SourceJob[] {
 }
 
 export function sourceEndpoint(source: Source) {
+  if (source.firm_name === 'Applied Ventures' && new URL(source.careers_url).hostname === 'careers.appliedmaterials.com') {
+    return 'https://app.eightfold.ai/api/pcsx/search?domain=appliedmaterials.com&query=ventures&location=&start=0';
+  }
   const board = encodeURIComponent(source.ats_board);
   if (source.ats_type !== 'HTML' && !board) throw new Error('ATS board identifier needs review');
   switch (source.ats_type) {
@@ -91,9 +104,11 @@ export function sourceEndpoint(source: Source) {
 export async function readSource(source: Source): Promise<SourceJob[]> {
   const endpoint = sourceEndpoint(source);
   if (isLinkedIn(endpoint)) throw new Error('LinkedIn is excluded');
-  const response = await fetch(endpoint, { signal: AbortSignal.timeout(1800), redirect: 'follow' });
+  const response = await fetch(endpoint, { signal: AbortSignal.timeout(2800), redirect: 'follow' });
   if (!response.ok) throw new Error(`Source returned HTTP ${response.status}`);
   if (isLinkedIn(response.url || endpoint)) throw new Error('Source redirects to LinkedIn; excluded');
-  const jobs = source.ats_type === 'HTML' ? parseHtml(source, await response.text()) : parseAts(source, await response.json());
+  const jobs = endpoint.startsWith('https://app.eightfold.ai/api/pcsx/search?')
+    ? (await import('./eightfold-source')).parseAppliedVentures(await response.json())
+    : source.ats_type === 'HTML' ? parseHtml(source, await response.text()) : parseAts(source, await response.json());
   return Array.from(new Map(jobs.map(j => [roleKey(source.firm_name, j.title), j])).values());
 }
