@@ -1,6 +1,7 @@
 import {createServerFn} from '@tanstack/react-start';
 import {createClient} from '@supabase/supabase-js';
 import type {Database} from '@/integrations/supabase/types';
+import { isAssociatePosition } from './job-eligibility';
 export const getBoardData=createServerFn({method:'GET'}).handler(async()=>{
  const key=process.env['SUPABASE_PUBLISHABLE_KEY'];
  const url=process.env['SUPABASE_URL'];
@@ -20,5 +21,5 @@ export const getBoardData=createServerFn({method:'GET'}).handler(async()=>{
  ]);
  if(postings.error)throw new Error('The board could not load.');
  if(run.error)throw new Error('Verification history could not load.');
- return {postings:postings.data,lastVerified:run.data};
+ return {postings:postings.data.filter(posting=>isAssociatePosition(posting.title)),lastVerified:run.data};
 });

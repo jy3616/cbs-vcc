@@ -48,9 +48,8 @@ const locBucket = (j: Job) => (j.nyc ? "New York" : !j.location ? "Unspecified" 
 
 function JobCard({ j, score, bookmarked, onToggleBookmark }: { j: Job; score?: number | undefined; bookmarked: boolean; onToggleBookmark: () => void }) {
   const { user } = useStudent();
-  const hl = j.nyc || j.mentionsMba;
   return (
-    <article className={`rounded-lg border bg-card p-4 sm:p-5 ${hl ? "border-l-4 border-l-accent" : ""} ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
+    <article className={`rounded-lg border bg-card p-4 sm:p-5 ${isInactive(postingStatus(j, todayET())) ? "opacity-60" : ""}`}>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-muted-foreground">{j.firm}</p>

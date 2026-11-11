@@ -26,3 +26,4 @@
 - Every auth lifecycle profile insert uses ON CONFLICT (id) DO NOTHING; multiple signup triggers must coexist without duplicate-key failures or overwriting student profile edits.
 - Avatars are private Storage objects under owner folders and render through short-lived signed URLs, so images never become anonymous public assets.
 - Board pagination slices the filtered, sorted list on the client and resets on filter or sort changes; this preserves global counts and fit ranking across pages.
+- Public board reads and daily source adapters share job-eligibility.ts for seniority filtering; this keeps current counts and future imports consistent without deleting saved postings.

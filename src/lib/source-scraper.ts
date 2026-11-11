@@ -1,6 +1,7 @@
 // The slim entry excludes Node-only HTTP/stream dependencies on published Workers.
 import { load } from 'cheerio/slim';
 import { z } from 'zod';
+import { isAssociatePosition } from './job-eligibility';
 
 export type Source = { id: string; firm_name: string; careers_url: string; ats_type: string; ats_board: string };
 export type SourceJob = { id: string; title: string; url: string; location: string; nyc: boolean; mentionsMba: boolean; roleType: string };
@@ -9,8 +10,7 @@ export const isLinkedIn = (url: string) => { try { return /(^|\.)linkedin\.com$/
 
 export function investmentRole(title: string, department = '') {
   if (/engineer|sales|account executive|software|developer|recruit|human resources|talent sourcing|legal|compliance|accounting|finance operations|financial planning|fund operations|IT support|data scientist|executive assistant|product manager|secondary investments|primary investments|talent network/i.test(title)) return false;
-  const eligible = /\banalyst\b|\bassociate\b|\bprincipal\b|vice president|\bvp\b|MBA.*intern|summer associate|investment team|platform|scout/i.test(title);
-  if (!eligible) return false;
+  if (!isAssociatePosition(title)) return false;
   // Generic seniority alone is insufficient on mixed firm/portfolio boards.
   return /invest|venture|growth|portfolio management|life sciences|asset selection|scout|platform/i.test(`${title} ${department}`);
 }

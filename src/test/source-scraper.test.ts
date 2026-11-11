@@ -2,7 +2,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { investmentRole, parseAts, parseHtml, readSource, roleKey, sourceEndpoint } from '@/lib/source-scraper';
 const source = { id: 'source', firm_name: 'Firm', careers_url: 'https://firm.test/careers', ats_type: 'Greenhouse', ats_board: 'firm' };
 describe('investment-only source checks', () => {
-  it.each(['Analyst', 'Associate', 'Senior Associate', 'Principal', 'Vice President', 'MBA Intern', 'Summer Associate', 'Investment Team', 'Platform', 'Scout'])('keeps %s on an investment team', title => expect(investmentRole(title, 'Investment')).toBe(true));
+  it.each(['Associate', 'Senior Associate', 'Investment Associate', 'Senior Investment Associate'])('keeps %s on an investment team', title => expect(investmentRole(title, 'Investment')).toBe(true));
+  it.each(['Analyst', 'Principal', 'Vice President', 'MBA Intern', 'Summer Associate', 'Investment Team', 'Platform', 'Scout'])('excludes other levels: %s', title => expect(investmentRole(title, 'Investment')).toBe(false));
   it.each(['Software Engineer', 'Sales Associate', 'Account Executive', 'Legal Associate', 'Fund Operations Analyst'])('excludes %s', title => expect(investmentRole(title, 'Investment')).toBe(false));
   it('does not accept a portfolio-company generic associate', () => expect(investmentRole('Associate', 'Customer Service')).toBe(false));
   it('normalizes firm and title for duplicates', () => expect(roleKey('Firm VC', 'Senior Associate')).toBe(roleKey('firm vc', 'Senior-Associate ')));
@@ -16,19 +17,18 @@ describe('investment-only source checks', () => {
   it('uses the public Lever endpoint', () => expect(sourceEndpoint({ ...source, ats_type: 'Lever' })).toBe('https://api.lever.co/v0/postings/firm?mode=json'));
   it('uses the public Ashby endpoint', () => expect(sourceEndpoint({ ...source, ats_type: 'Ashby' })).toBe('https://api.ashbyhq.com/posting-api/job-board/firm'));
   it('does not treat malformed ATS responses as absent roles', () => expect(() => parseAts(source, { error: 'blocked' })).toThrow());
-  it('keeps a verified analyst and excludes sales', () => expect(parseAts(source, { jobs: [
-    { id: 1, title: 'Analyst', departments: [{ name: 'Investment' }], absolute_url: 'https://firm.test/1', location: { name: 'New York' } },
+  it('keeps a verified associate and excludes sales', () => expect(parseAts(source, { jobs: [
+    { id: 1, title: 'Associate', departments: [{ name: 'Investment' }], absolute_url: 'https://firm.test/1', location: { name: 'New York' } },
     { id: 2, title: 'Sales Associate', absolute_url: 'https://firm.test/2' },
-  ] }).map(j => j.title)).toEqual(['Analyst']));
+  ] }).map(j => j.title)).toEqual(['Associate']));
   it('does not treat an unparsed HTML shell as absent roles', () => expect(() => parseHtml(source, '<html><body>Loading</body></html>')).toThrow());
   it('recognizes an explicit empty careers page', () => expect(parseHtml(source, '<p>No open positions</p>')).toEqual([]));
   it('keeps Yamaha investment senior associates with the real board location', () => {
     const jobs = parseHtml({ ...source, firm_name: 'Yamaha Motor Ventures' }, '<a href="https://yamaha.test/p/1"><h2>Senior Associate</h2><ul><li class="location">Palo Alto, CA</li></ul>Apply</a>');
     expect(jobs.map(j => [j.title, j.location])).toEqual([['Senior Associate', 'Palo Alto, CA']]);
   });
-  it('reads In-Q-Tel investment summer associates from complete iCIMS boards', () => {
-    const jobs = parseHtml(source, '<p>Search Results Page 1 of 1</p><li class="iCIMS_JobCardItem"><div class="header left"><span class="field-label">Job Locations</span><span>US-CA-Menlo Park</span></div><a href="https://iqt.test/jobs/1460"><span>Job Title</span><h3>Investment Summer Associate</h3></a><div class="description">Investment team</div></li>');
-    expect(jobs.map(j => [j.title, j.location, j.roleType])).toEqual([['Investment Summer Associate', 'US-CA-Menlo Park', 'Summer internship']]);
+  it('excludes In-Q-Tel summer associates without treating a filtered page as a complete empty list', () => {
+    expect(() => parseHtml(source, '<p>Search Results Page 1 of 1</p><li class="iCIMS_JobCardItem"><a href="https://iqt.test/jobs/1460"><h3>Investment Summer Associate</h3></a><div class="description">Investment team</div></li>')).toThrow('No complete job list');
   });
   it('never expires roles using only the first iCIMS page', () => expect(() => parseHtml(source, '<p>Search Results Page 1 of 2</p><a href="https://firm.test/1">Investment Associate</a>')).toThrow('Incomplete'));
   it('reads a single structured listing and all its locations', () => {
