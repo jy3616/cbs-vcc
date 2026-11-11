@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { isNew, type Job } from "@/data/jobs";
+import type { Job } from "@/data/jobs";
 import { StatusLabel } from "@/components/StatusLabel";
 import { fmtDay, postingsQuery, verificationQuery } from "@/lib/postings";
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -132,8 +132,6 @@ function Board() {
   const [loadedFilters,setLoadedFilters]=useState(false);
   useEffect(()=>{if(loadedFilters||!prefs.data)return;const f=prefs.data.filters;if(f&&typeof f==="object"&&!Array.isArray(f)){setRole(String(f["role"]??""));setLoc(String(f["loc"]??""));setFirm(String(f["firm"]??""));setSector(String(f["sector"]??""));setStage(String(f["stage"]??""));setMba(String(f["mba"]??""));}setLoadedFilters(true);},[prefs.data,loadedFilters]);
   async function rank(){setSort("fit");if(!resume.trim()){setRankError("Add your resume on My resume to rank postings.");return;}setRanking(true);setRankError("");try{for(const job of JOBS.filter(j=>!isInactive(postingStatus(j,today)))){if(analyses[job.url])continue;const result=await run({data:{jobUrl:job.url,resumeText:resume}});saveAnalysis(job.url,result);}}catch(e){setRankError(e instanceof Error?e.message:"Ranking stopped; completed scores are saved.");}finally{setRanking(false);}}
-  const now = new Date();
-  const fresh = JOBS.filter((j) => isNew(j, now) && !isInactive(postingStatus(j, today)));
   const openCount = JOBS.filter((j) => !isInactive(postingStatus(j, today))).length;
 
   const list = useMemo(() => {
@@ -174,15 +172,7 @@ function Board() {
         <p className="mt-3 text-sm text-muted-foreground">Last verified: {lastVerified ? fmtDay(lastVerified) : "—"} · {openCount} open postings</p>
       </header>
 
-      <section className="mt-8">
-        <h2 className="text-2xl font-semibold">New in the last 24 hours</h2>
-        <div className="mt-4 space-y-3">
-          {fresh.length ? fresh.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :
-            <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No new postings in the last 24 hours.</p>}
-        </div>
-      </section>
-
-      <section ref={postingsSection} className="mt-12 scroll-mt-6">
+      <section ref={postingsSection} className="mt-8 scroll-mt-6">
         <h2 className="text-2xl font-semibold">All postings</h2>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-6">
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search firm, title, sector…"
