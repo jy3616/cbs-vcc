@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Done
+- Enhanced existing resume matching with confirmed upload/paste previews, private personal job-description checks, six evidence-based category scores, four fit levels, actionable gaps, and verified missing keywords; 15 focused tests pass and public mobile board has no overflow.
 - Removed the hide-expired option; public lists exclude expired jobs automatically and hourly SQL cleanup deletes confirmed expired postings.
 - Restricted public postings and future daily imports to Associate and Senior Associate levels; removed NYC/MBA blue card borders while keeping badges.
 - Added John Gannon's public rolling job feed to daily checks around 6am ET; today's refresh added four verified listings (Norrsken VC, Village Capital, General Atlantic, PagsGroup). Rolling-feed absence never expires jobs or replaces company-source ownership. Publishing is required for the new reader.
@@ -29,7 +30,7 @@
 - Scraped Indeed/Glassdoor/other job sites for VC postings: added 6 verified roles (HOF Capital Analyst, Associate, Fall 2026 Intern; J2 Ventures Associate; Intermountain Ventures Analyst; Impression Ventures Analyst) — board now 20 postings
 
 ## Open
-- Enhance the existing board with pasted resume confirmation, personal job-description matching, six evidence-based category scores, missing keywords, and four match levels; preserve verified listings and access rules.
+- Signed-in resume upload and AI matching end-to-end verification: blocked because account-access permission was declined; public access, private-page redirect, and scoring tests verified.
 - Publish the corrected daily source reader and sign-in removal; existing active schedules check every source around 6am ET, but the live website still uses the crashing reader until published.
 - Weekly digest sending: blocked on the user choosing a dedicated email service
 - Signed-in student/admin end-to-end and board mobile verification: blocked on first verified CBS student sign-in (existing accounts are outside the allowed domain)
