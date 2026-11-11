@@ -5,7 +5,7 @@ import { useBookmarks } from "@/lib/bookmarks";
 
 type Props = {
   /** Which page we're on, so its link reads as active. */
-  current?: "resume" | "bookmarks";
+  current?: "resume" | "bookmarks" | "board";
 };
 
 /** Header links to the resume page and the bookmarked-postings page. */
@@ -21,6 +21,7 @@ export function BoardNav({ current }: Props) {
 
   return (
     <nav className="ml-auto flex flex-wrap items-center gap-2 text-sm" aria-label="Board pages">
+      <Button variant={current === "board" ? "secondary" : "ghost"} size="sm" asChild><Link to="/">Job Board</Link></Button>
       <Link to="/my-resume" className={link(current === "resume")}>
         My resume
       </Link>

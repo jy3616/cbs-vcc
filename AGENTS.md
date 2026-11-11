@@ -28,3 +28,5 @@
 - Avatars are private Storage objects under owner folders and render through short-lived signed URLs, so images never become anonymous public assets.
 - Board pagination slices the filtered, sorted list on the client and resets on filter or sort changes; this preserves global counts and fit ranking across pages.
 - Public board reads and daily source adapters share job-eligibility.ts for seniority filtering; this keeps current counts and future imports consistent without deleting saved postings.
+- Board and personal-description checks share the same server-side evidence audit and result renderer; category scores derive from verified requirements and unspecified categories stay unscored to avoid fabricated criteria.
+- Personal job descriptions are transient matching input, never public postings; resume uploads require text confirmation before replacing saved content to prevent parsing mistakes.

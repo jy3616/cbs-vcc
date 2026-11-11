@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Job } from "@/data/jobs";
 
 /** Pass 1: requirement-by-requirement matrix. */
+export const FIT_CATEGORIES = ["Investment & financial analysis", "Sector expertise", "Operating / startup experience", "Network, sourcing & deal flow", "Communication & thought leadership", "Education & credentials"] as const;
 export const matrixSchema = z.object({
   requirements: z.array(
     z.object({
@@ -11,6 +12,7 @@ export const matrixSchema = z.object({
       verdict: z.enum(["met", "partial", "missing"]),
       evidence: z.string(), // exact quote from the resume, or "" if none
       reasoning: z.string(),
+      category: z.enum(FIT_CATEGORIES).optional(),
     }),
   ),
 });
@@ -24,16 +26,30 @@ export const narrativeSchema = z.object({
   resumeTips: z.array(z.string()).min(2).max(3),
   behavioralQuestions: z.array(qa),
   technicalQuestions: z.array(qa),
+  missingKeywords: z.array(z.string()).max(15).optional(),
 });
 
 export type FitResult = z.infer<typeof narrativeSchema> & {
   fitScore: number;
   fitLabel: string;
   requirements?: Requirement[];
+  categoryScores?: { category: string; score: number | null }[];
 };
 
-export function fitLabelFor(score: number): "Strong fit" | "Moderate fit" | "Stretch" {
-  return score >= 75 ? "Strong fit" : score >= 50 ? "Moderate fit" : "Stretch";
+export function fitLabelFor(score: number): "Strong fit" | "Good fit" | "Moderate fit" | "Stretch" {
+  return score >= 75 ? "Strong fit" : score >= 60 ? "Good fit" : score >= 50 ? "Moderate fit" : "Stretch";
+}
+
+export function scoreCategories(requirements: Requirement[]) {
+  return FIT_CATEGORIES.map(category => {
+    const rows = requirements.filter(r => r.category === category);
+    return { category, score: rows.length ? scoreRequirements(rows) : null };
+  });
+}
+
+export function verifyMissingKeywords(keywords: string[], posting: string, resume: string) {
+  const contains = (text: string, word: string) => (` ${norm(text)} `).includes(` ${norm(word)} `);
+  return [...new Set(keywords)].filter(word => norm(word).length > 1 && contains(posting, word) && !contains(resume, word));
 }
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();

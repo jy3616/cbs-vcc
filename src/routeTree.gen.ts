@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBookmarksRouteImport } from './routes/_authenticated/bookmarks'
+import { Route as AuthenticatedMatchRouteImport } from './routes/_authenticated/match'
 import { Route as AuthenticatedMyApplicationsRouteImport } from './routes/_authenticated/my-applications'
 import { Route as AuthenticatedMyResumeRouteImport } from './routes/_authenticated/my-resume'
 import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
@@ -48,6 +49,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const AuthenticatedBookmarksRoute = AuthenticatedBookmarksRouteImport.update({
   id: '/bookmarks',
   path: '/bookmarks',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMatchRoute = AuthenticatedMatchRouteImport.update({
+  id: '/match',
+  path: '/match',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMyApplicationsRoute =
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/bookmarks': typeof AuthenticatedBookmarksRoute
+  '/match': typeof AuthenticatedMatchRoute
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
   '/jobs/$slug': typeof JobsSlugRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/bookmarks': typeof AuthenticatedBookmarksRoute
+  '/match': typeof AuthenticatedMatchRoute
   '/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/my-resume': typeof AuthenticatedMyResumeRoute
   '/jobs/$slug': typeof JobsSlugRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/bookmarks': typeof AuthenticatedBookmarksRoute
+  '/_authenticated/match': typeof AuthenticatedMatchRoute
   '/_authenticated/my-applications': typeof AuthenticatedMyApplicationsRoute
   '/_authenticated/my-resume': typeof AuthenticatedMyResumeRoute
   '/jobs/$slug': typeof JobsSlugRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/bookmarks'
+    | '/match'
     | '/my-applications'
     | '/my-resume'
     | '/jobs/$slug'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/bookmarks'
+    | '/match'
     | '/my-applications'
     | '/my-resume'
     | '/jobs/$slug'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/bookmarks'
+    | '/_authenticated/match'
     | '/_authenticated/my-applications'
     | '/_authenticated/my-resume'
     | '/jobs/$slug'
@@ -209,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookmarksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/match': {
+      id: '/_authenticated/match'
+      path: '/match'
+      fullPath: '/match'
+      preLoaderRoute: typeof AuthenticatedMatchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/my-applications': {
       id: '/_authenticated/my-applications'
       path: '/my-applications'
@@ -251,6 +270,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedBookmarksRoute: typeof AuthenticatedBookmarksRoute
+  AuthenticatedMatchRoute: typeof AuthenticatedMatchRoute
   AuthenticatedMyApplicationsRoute: typeof AuthenticatedMyApplicationsRoute
   AuthenticatedMyResumeRoute: typeof AuthenticatedMyResumeRoute
 }
@@ -259,6 +279,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedBookmarksRoute: AuthenticatedBookmarksRoute,
+  AuthenticatedMatchRoute: AuthenticatedMatchRoute,
   AuthenticatedMyApplicationsRoute: AuthenticatedMyApplicationsRoute,
   AuthenticatedMyResumeRoute: AuthenticatedMyResumeRoute,
 }

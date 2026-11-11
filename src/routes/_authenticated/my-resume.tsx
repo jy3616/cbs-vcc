@@ -24,6 +24,8 @@ export const Route = createFileRoute("/_authenticated/my-resume")({
 function MyResume() {
   const { text, ready, save, account, setAccount } = useResume();
   const [busy, setBusy] = useState(false);
+  const [draft, setDraft] = useState<string | null>(null);
+  const [fileName, setFileName] = useState("");
 
   async function upload(file: File) {
     if (file.size > 10 * 1024 * 1024) { toast.error("That file is over 10 MB."); return; }
@@ -41,8 +43,16 @@ function MyResume() {
       toast.error("We couldn't find text in that file. If it's a scanned image, export it from Word or Google Docs as a PDF and try again.");
       return;
     }
-    await save(content);
-    toast.success(`Resume saved: ${file.name}`);
+    setDraft(content);
+    setFileName(file.name);
+  }
+
+  async function confirmResume() {
+    if (!draft || draft.trim().length < 50) { toast.error("Add at least 50 characters of resume text."); return; }
+    setBusy(true);
+    try { await save(draft.trim()); setDraft(null); toast.success("Resume saved"); }
+    catch { /* Save reports its error without losing the draft. */ }
+    finally { setBusy(false); }
   }
 
   async function remove() {
@@ -69,6 +79,17 @@ function MyResume() {
         <input type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) upload(f); }} />
       </label>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button variant="outline" disabled={busy || !ready} onClick={() => { setFileName(""); setDraft(text); }}>Paste or edit resume</Button>
+        <Button variant="outline" asChild><Link to="/match">Match a job description</Link></Button>
+      </div>
+      {draft !== null && <section className="mt-5 border-t pt-5">
+        <h2 className="text-xl font-semibold">Confirm resume text</h2>
+        {fileName && <p className="mt-1 text-sm text-muted-foreground">{fileName}</p>}
+        <label className="mt-3 block text-sm font-medium" htmlFor="resume-draft">Resume text</label>
+        <textarea id="resume-draft" value={draft} onChange={e => setDraft(e.target.value)} maxLength={50000} rows={14} className="mt-2 w-full rounded-md border border-input bg-card p-3 text-sm" />
+        <div className="mt-3 flex gap-2"><Button disabled={busy || draft.trim().length < 50} onClick={() => void confirmResume()}>Confirm and save</Button><Button variant="ghost" onClick={() => setDraft(null)}>Cancel</Button></div>
+      </section>}
       {text && (
         <details className="mt-4 rounded-lg border bg-card p-4 text-sm">
           <summary className="cursor-pointer font-medium">See the text we read from your resume</summary>

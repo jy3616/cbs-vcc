@@ -29,6 +29,7 @@
 - Scraped Indeed/Glassdoor/other job sites for VC postings: added 6 verified roles (HOF Capital Analyst, Associate, Fall 2026 Intern; J2 Ventures Associate; Intermountain Ventures Analyst; Impression Ventures Analyst) — board now 20 postings
 
 ## Open
+- Enhance the existing board with pasted resume confirmation, personal job-description matching, six evidence-based category scores, missing keywords, and four match levels; preserve verified listings and access rules.
 - Publish the corrected daily source reader and sign-in removal; existing active schedules check every source around 6am ET, but the live website still uses the crashing reader until published.
 - Weekly digest sending: blocked on the user choosing a dedicated email service
 - Signed-in student/admin end-to-end and board mobile verification: blocked on first verified CBS student sign-in (existing accounts are outside the allowed domain)
