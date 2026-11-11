@@ -170,7 +170,7 @@ function Board() {
           <BoardNav />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Columbia Business School · Venture Capital Club</p>
-        <h1 className="mt-2 text-xl font-bold text-primary sm:text-4xl"><span className="whitespace-nowrap">CBS Venture Capital Club</span><br/>Job Board</h1>
+        <h1 className="mt-2 whitespace-nowrap text-sm font-bold text-primary sm:text-2xl lg:text-4xl">CBS Venture Capital Club Job Board</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last verified: {lastVerified ? fmtDay(lastVerified) : "—"} · {openCount} open postings</p>
       </header>
 
