@@ -18,6 +18,7 @@
 - HTML source parsing must import cheerio/slim, not cheerio; the full entry loads Node-only networking dependencies that crash published daily callbacks.
 - HTML adapters read job headings and location fields on Breezy, JazzHR and iCIMS; incomplete paginated iCIMS lists fail safely rather than expiring unseen jobs.
 - Applied Ventures uses Eightfold's public ventures search with schema and completeness checks; generic parent-company or non-eligible titles never become invented investment postings.
+- John Gannon discovery reads its public rolling RSS feed, stores actual employers and dates, and uses a separate completion RPC that preserves company-source ownership and never expires jobs merely missing from the feed; hourly checks still verify saved links.
 - Public board reads use a server publishable client with a safe column projection and visible-row anon RLS; last-verification RPC exposes only the aggregate timestamp while detailed scrape errors remain admin-only.
 - Deadline-passed postings are deleted daily by a SQL-only pg_cron job. Why: the user wants them gone, not just labelled.
 

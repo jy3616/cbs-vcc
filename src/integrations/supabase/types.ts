@@ -458,6 +458,15 @@ export type Database = {
         Args: { p_date: string; p_source: string }
         Returns: string
       }
+      finish_gannon_scrape: {
+        Args: {
+          p_error?: string
+          p_jobs: Json
+          p_run: string
+          p_source: string
+        }
+        Returns: Json
+      }
       finish_source_scrape: {
         Args: {
           p_error?: string

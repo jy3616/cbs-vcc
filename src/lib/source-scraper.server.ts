@@ -9,10 +9,11 @@ export async function runSourceScrape(sourceId: string) {
   const { data: runId, error: claimError } = await db.rpc('claim_source_scrape', { p_source: sourceId, p_date: todayET() });
   if (claimError) throw claimError;
   if (!runId) return { skipped: 'Source already checked today or inactive' };
-  let jobs: Awaited<ReturnType<typeof readSource>> = [];
+  const isGannon = source.ats_board === 'gannon-feed';
+  let jobs: Awaited<ReturnType<typeof readSource>> | Awaited<ReturnType<typeof import('./gannon-source').readGannonFeed>> = [];
   let failure = '';
-  try { jobs = await readSource(source); } catch (err) { failure = err instanceof Error ? err.message : String(err); }
-  const { data: result, error: finishError } = await db.rpc('finish_source_scrape', { p_run: runId, p_source: sourceId, p_jobs: jobs, p_error: failure });
+  try { jobs = isGannon ? await (await import('./gannon-source')).readGannonFeed() : await readSource(source); } catch (err) { failure = err instanceof Error ? err.message : String(err); }
+  const { data: result, error: finishError } = await db.rpc(isGannon ? 'finish_gannon_scrape' : 'finish_source_scrape', { p_run: runId, p_source: sourceId, p_jobs: jobs, p_error: failure });
   if (finishError) throw finishError;
   return result;
 }
