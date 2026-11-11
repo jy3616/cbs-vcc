@@ -21,6 +21,7 @@
 - John Gannon discovery reads its public rolling RSS feed, stores actual employers and dates, and uses a separate completion RPC that preserves company-source ownership and never expires jobs merely missing from the feed; hourly checks still verify saved links.
 - Public board reads use a server publishable client with a safe column projection and visible-row anon RLS; last-verification RPC exposes only the aggregate timestamp while detailed scrape errors remain admin-only.
 - Deadline-passed postings are deleted daily by a SQL-only pg_cron job. Why: the user wants them gone, not just labelled.
+- Confirmed expired postings are excluded from public reads immediately and deleted by hourly SQL-only cleanup; saved application snapshots remain independent of posting rows.
 
 - Admin roles are separate protected rows; email grants require an already signed-in verified student, and the designated owner is granted by the auth verification trigger rather than browser logic.
 - Every auth lifecycle profile insert uses ON CONFLICT (id) DO NOTHING; multiple signup triggers must coexist without duplicate-key failures or overwriting student profile edits.

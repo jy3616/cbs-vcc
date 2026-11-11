@@ -121,7 +121,6 @@ function Board() {
   const [ranking,setRanking]=useState(false);const [rankError,setRankError]=useState("");
   const {text:resume}=useResume();const prefs=usePreferences();const run=useServerFn(analyzeFit);
   const [sort, setSort] = useState<"deadline" | "new" | "old" | "fit">("deadline");
-  const [hideExpired, setHideExpired] = useState(true);
   const [page, setPage] = useState(1);
   const postingsSection = useRef<HTMLElement>(null);
   const { data: JOBS } = useSuspenseQuery(postingsQuery);
@@ -140,7 +139,7 @@ function Board() {
   const list = useMemo(() => {
     const s = q.toLowerCase();
     const filtered = JOBS.filter((j) =>
-      (!hideExpired || !isInactive(postingStatus(j, today))) &&
+      !isInactive(postingStatus(j, today)) &&
       (!role || j.roleType === role) && (!loc || locBucket(j) === loc) && (!firm || j.firmType === firm) &&
       (!sector || j.sectors.includes(sector)) && (!stage||j.fundStage===stage) && (!mba||!!j.mbaSpecific===(mba==="Yes")) &&
       (!s || [j.firm, j.title, j.location, j.focus].join(" ").toLowerCase().includes(s)),
@@ -148,16 +147,15 @@ function Board() {
     if(sort==="fit")return filtered.filter(j=>!isInactive(postingStatus(j,today))).sort((a,b)=>(analyses[b.url]?.result.fitScore??-1)-(analyses[a.url]?.result.fitScore??-1));
     const byDate = filtered.sort((a, b) => (sort === "old" ? a.datePosted.localeCompare(b.datePosted) : b.datePosted.localeCompare(a.datePosted)));
     if (sort === "deadline") return sortByStatus(byDate, today);
-    // Date sorts still keep deadline-passed and expired postings at the bottom.
-    return [...byDate.filter((j) => !isInactive(postingStatus(j, today))), ...byDate.filter((j) => isInactive(postingStatus(j, today)))];
-  }, [JOBS, q, role, loc, firm, sector, stage,mba,analyses,sort, hideExpired, today]);
+    return byDate;
+  }, [JOBS, q, role, loc, firm, sector, stage,mba,analyses,sort, today]);
 
   const pageSize = 10;
   const pageCount = Math.max(1, Math.ceil(list.length / pageSize));
   const currentPage = Math.min(page, pageCount);
   const pageStart = (currentPage - 1) * pageSize;
   const visiblePostings = list.slice(pageStart, pageStart + pageSize);
-  useEffect(() => { setPage(1); }, [q, role, loc, firm, sector, stage, mba, sort, hideExpired]);
+  useEffect(() => { setPage(1); }, [q, role, loc, firm, sector, stage, mba, sort]);
   useEffect(() => { setPage((previous) => Math.min(previous, pageCount)); }, [pageCount]);
   function changePage(nextPage: number) {
     setPage(nextPage);
@@ -207,10 +205,6 @@ function Board() {
           </label>
         </div>
         <div className="mt-3 flex flex-wrap gap-3 items-center">{user && <Button variant="outline" size="sm" onClick={()=>void prefs.save({filters:{role,loc,firm,sector,stage,mba}}).then(()=>toast.success("Filters saved")).catch(()=>toast.error("Could not save filters"))}>Save filters</Button>}{ranking&&<p className="text-xs text-muted-foreground">Checking open postings; completed scores are cached…</p>}{rankError&&<p className="text-sm text-destructive">{rankError}</p>}</div>
-        <label className="mt-3 flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={hideExpired} onChange={(e) => setHideExpired(e.target.checked)} className="h-4 w-4 accent-primary" />
-          Hide expired postings
-        </label>
 
         <div className="mt-4 space-y-3">
           {list.length ? visiblePostings.map((j) => <JobCard key={j.url} j={j} score={analyses[j.url]?.result.fitScore} bookmarked={!!bookmarks[j.url]} onToggleBookmark={() => toggleBookmark(j.url)} />) :

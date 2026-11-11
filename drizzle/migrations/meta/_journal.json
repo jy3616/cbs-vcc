@@ -85,6 +85,13 @@
       "when": 1794423683263,
       "tag": "0011_gannon_rolling_feed_completion",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794424249899,
+      "tag": "0012_automatic_expired_posting_cleanup",
+      "breakpoints": true
     }
   ]
 }

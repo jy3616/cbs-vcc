@@ -1,0 +1,1 @@
+SELECT cron.schedule('delete-expired-postings', '5 * * * *', $$DELETE FROM public.postings WHERE expired = true;$$);

@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Done
+- Removed the hide-expired option; public lists exclude expired jobs automatically and hourly SQL cleanup deletes confirmed expired postings.
 - Restricted public postings and future daily imports to Associate and Senior Associate levels; removed NYC/MBA blue card borders while keeping badges.
 - Added John Gannon's public rolling job feed to daily checks around 6am ET; today's refresh added four verified listings (Norrsken VC, Village Capital, General Atlantic, PagsGroup). Rolling-feed absence never expires jobs or replaces company-source ownership. Publishing is required for the new reader.
 - Added six screenshot firms to daily 6am ET checks and ran them now: eight current jobs added across Sidekick, Motion, In-Q-Tel, Yamaha and NAVER. Applied Ventures' feed succeeded but has no eligible seniority title; old screenshot role not recreated. Sidekick uses a flagged third-party firm board. Yamaha succeeded after a timeout retry. Source rules and public routing: 39 tests passed; public board shows all eight new cards without sign-in links.
